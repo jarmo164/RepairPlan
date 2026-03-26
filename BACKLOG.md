@@ -190,7 +190,7 @@ Valitud suund:
 - [x] Luua dashboard page
 - [x] Luua dashboard template skeleton
 - [x] Luua dashboard summary endpoint
-- [ ] Näidata:
+- [x] Näidata:
   - [x] alustamata tööde arv
   - [x] töös tööde arv
   - [x] lõpetatud tööde arv
