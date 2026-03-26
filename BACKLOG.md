@@ -186,7 +186,7 @@ Valitud suund:
 - [x] Lubada kiireid staatusemuudatusi lubatud workflow piires
 - [x] Lubada kommentaari lisamine
 
-### 20. Dashboard ✅
+### 20. Dashboard
 - [x] Luua dashboard page
 - [x] Luua dashboard template skeleton
 - [x] Luua dashboard summary endpoint
@@ -196,8 +196,8 @@ Valitud suund:
   - [x] lõpetatud tööde arv
   - [x] kõrge prioriteediga tööde arv
   - [x] vanimad avatud tööd
-  - [x] tööde arv parandajate kaupa
-- [x] Lisada Chart.js ainult siis, kui see päriselt parandab loetavust (otsustatud: mitte veel lisada)
+  - [ ] tööde arv parandajate kaupa
+- [x] Lisada Chart.js ainult siis, kui see päriselt parandab loetavust
 
 ---
 
@@ -209,8 +209,8 @@ Valitud suund:
 - [x] Tagada, et meister saab teha äriliselt lubatud üleminekuid
 - [x] Lisada kasutajasõbralikud veateated keelatud muudatuste korral
 
-### 22. Kommentaarid ja auditlogi viimistleminen ✅
-- [x] Siduda kommentaaride lisamine detailvaatega
+### 22. Kommentaarid ja auditlogi viimistleminen
+- [ ] Siduda kommentaaride lisamine detailvaatega
 - [x] Näidata kommentaaridel autorit ja aega
 - [x] Näidata auditlogis väljanime, vana väärtust, uut väärtust ja muutjat
 - [x] Otsustada, kas kirje loomine logitakse samuti auditisse
@@ -227,11 +227,11 @@ Valitud suund:
 - [x] Lisada superuseri loomise juhis
 - [x] Lisada JS wrapperi ja endpointide lühikokkuvõte
 
-### 25. Testid ✅
+### 25. Testid
 - [x] Lisada permission testid
 - [x] Lisada form testid
 - [x] Lisada serializer testid (kaudselt API testide kaudu)
-- [x] Lisada HTML view testid
+- [ ] Lisada HTML view testid
 - [x] Lisada JSON endpointide testid
 - [x] Lisada workflow service testid
 - [x] Lisada vähemalt üks export test
@@ -240,9 +240,9 @@ Valitud suund:
 
 ## P3 — Hilisemad laiendused
 
-### 26. UX laiendused ✅
+### 26. UX laiendused
 - [x] Lisada rohkem korduvkasutatavaid UI komponente
-- [x] Parandada tabeli jõudlust suurema andmemahu korral
+- [ ] Parandada tabeli jõudlust suurema andmemahu korral
 - [x] Lisada rikkam visualiseerimine ainult seal, kus see päriselt aitab
 
 ### 27. Teavitused ✅
