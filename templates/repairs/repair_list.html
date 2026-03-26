@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Parandused · RepairPlan{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Parandused</h1>
+    <p class="text-body-secondary mb-0">Filtreeritav nimekiri, mille read laetakse API kaudu.</p>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form id="repairs-filter-form" class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Tootekoodi otsing</label>
+        <input type="text" class="form-control" name="search" value="{{ search }}" placeholder="Nt ABC-123">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Osakond</label>
+        <select class="form-select" name="department">
+          <option value="">Kõik</option>
+          {% for department in departments %}
+            <option value="{{ department.id }}">{{ department.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Staatus</label>
+        <select class="form-select" name="status">
+          <option value="">Kõik</option>
+          {% for value, label in status_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Prioriteet</label>
+        <select class="form-select" name="priority">
+          <option value="">Kõik</option>
+          {% for value, label in priority_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-1 d-flex align-items-end">
+        <button class="btn btn-primary w-100" type="submit">Filtreeri</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0" id="repairs-list-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tootekood</th>
+          <th>Klient / grupp</th>
+          <th>Osakond</th>
+          <th>Staatus</th>
+          <th>Prioriteet</th>
+          <th>Parandaja</th>
+          <th>Kuupäev</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="8" class="text-center text-body-secondary py-4">Laen nimekirja…</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer d-flex justify-content-between align-items-center">
+    <div id="repairs-pagination-summary" class="small text-body-secondary">—</div>
+    <div class="btn-group btn-group-sm">
+      <button class="btn btn-outline-secondary" id="repairs-prev-page" disabled>Eelmine</button>
+      <button class="btn btn-outline-secondary" id="repairs-next-page" disabled>Järgmine</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+(() => {
+  const form = document.getElementById('repairs-filter-form');
+  const tbody = document.querySelector('#repairs-list-table tbody');
+  const prevBtn = document.getElementById('repairs-prev-page');
+  const nextBtn = document.getElementById('repairs-next-page');
+  const summary = document.getElementById('repairs-pagination-summary');
+  let currentPage = 1;
+
+  function statusBadge(label) { return `<span class="badge text-bg-secondary">${label}</span>`; }
+  function priorityBadge(label) { return `<span class="badge text-bg-dark">${label}</span>`; }
+
+  async function loadPage(page = 1) {
+    currentPage = page;
+    const params = new URLSearchParams(new FormData(form));
+    params.set('page', String(page));
+    params.set('ordering', '-created_at');
+    const data = await RepairPlanApi.get(`/api/repairs/?${params.toString()}`);
+    tbody.innerHTML = '';
+    if (!data.results.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-body-secondary py-4">Kirjeid ei leitud.</td></tr>';
+    } else {
+      data.results.forEach((repair) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
+          <td>${repair.product_code}</td>
+          <td>${repair.client_or_group}</td>
+          <td>${repair.department}</td>
+          <td>${statusBadge(repair.status_label)}</td>
+          <td>${priorityBadge(repair.priority_label)}</td>
+          <td>${repair.assigned_to ?? '—'}</td>
+          <td>${new Date(repair.created_at).toLocaleString('et-EE')}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+    summary.textContent = `Leht ${data.pagination.page} / ${data.pagination.pages} · kokku ${data.pagination.count} kirjet`;
+    prevBtn.disabled = !data.pagination.has_previous;
+    nextBtn.disabled = !data.pagination.has_next;
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await loadPage(1);
+  });
+  prevBtn.addEventListener('click', async () => loadPage(currentPage - 1));
+  nextBtn.addEventListener('click', async () => loadPage(currentPage + 1));
+  document.addEventListener('DOMContentLoaded', () => loadPage(1));
+})();
+</script>
+{% endblock %}
