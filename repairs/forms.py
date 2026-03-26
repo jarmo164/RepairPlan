@@ -3,7 +3,19 @@ from django import forms
 from .models import Repair, RepairComment
 
 
-class RepairForm(forms.ModelForm):
+class RepairCreateForm(forms.ModelForm):
+    class Meta:
+        model = Repair
+        fields = [
+            'product_code',
+            'quantity',
+            'client_or_group',
+            'department',
+            'comment',
+        ]
+
+
+class RepairUpdateForm(forms.ModelForm):
     class Meta:
         model = Repair
         fields = [
@@ -23,5 +35,5 @@ class RepairCommentForm(forms.ModelForm):
         model = RepairComment
         fields = ['comment']
         widgets = {
-            'comment': forms.Textarea(attrs={'rows': 3}),
+            'comment': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
         }

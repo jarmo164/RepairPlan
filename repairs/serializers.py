@@ -40,8 +40,32 @@ class RepairDetailSerializer(RepairListSerializer):
         fields = RepairListSerializer.Meta.fields + ['comment', 'comments_count']
 
 
+class RepairCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Repair
+        fields = ['product_code', 'quantity', 'client_or_group', 'department', 'comment']
+
+
+class RepairUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Repair
+        fields = ['product_code', 'quantity', 'client_or_group', 'department', 'priority', 'status', 'assigned_to', 'comment']
+
+
+class RepairAssignSerializer(serializers.Serializer):
+    assigned_to = serializers.IntegerField(allow_null=True, required=False)
+
+
+class RepairStatusChangeSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=Repair.Status.choices)
+
+
+class RepairPriorityChangeSerializer(serializers.Serializer):
+    priority = serializers.ChoiceField(choices=Repair.Priority.choices)
+
+
 class RepairCommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField()
+    author = serializers.StringRelatedField(read_only=True)
 
     class Meta:
         model = RepairComment
