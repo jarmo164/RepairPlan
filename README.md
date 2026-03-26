@@ -1,6 +1,13 @@
 # RepairPlan
 
-prompt
+See repo sisaldab RepairPlan rakenduse lähteülesannet ja implementatsiooniplaani.
+
+## Dokumendid
+
+- `README.md` – algne ülesanne / prompt
+- `IMPLEMENTATION_PLAN.md` – soovitatud arhitektuur ja etapiviisiline teostusplaan
+
+## Algne prompt
 
 Loo veebipõhine paranduste haldamise rakendus Django raamistikus.
 
