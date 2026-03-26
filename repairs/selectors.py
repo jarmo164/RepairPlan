@@ -16,6 +16,42 @@ def repairs_visible_to(user):
     return qs.none()
 
 
+def filter_repairs_for_user(user, params=None):
+    params = params or {}
+    qs = repairs_visible_to(user)
+
+    search = (params.get('search') or '').strip()
+    if search:
+        qs = qs.filter(product_code__icontains=search)
+
+    department = params.get('department')
+    if department:
+        qs = qs.filter(department_id=department)
+
+    client_or_group = (params.get('client_or_group') or '').strip()
+    if client_or_group:
+        qs = qs.filter(client_or_group__icontains=client_or_group)
+
+    status = params.get('status')
+    if status:
+        qs = qs.filter(status=status)
+
+    priority = params.get('priority')
+    if priority:
+        qs = qs.filter(priority=priority)
+
+    assigned_to = params.get('assigned_to')
+    if assigned_to:
+        qs = qs.filter(assigned_to_id=assigned_to)
+
+    ordering = params.get('ordering') or '-created_at'
+    allowed_ordering = {'created_at', '-created_at', 'priority', '-priority', 'status', '-status'}
+    if ordering in allowed_ordering:
+        qs = qs.order_by(ordering)
+
+    return qs
+
+
 def my_work_for(user):
     return repairs_visible_to(user).filter(assigned_to=user)
 
@@ -29,3 +65,7 @@ def dashboard_summary_for(user):
         'completed': qs.filter(status=Repair.Status.COMPLETED).count(),
         'high_priority': qs.filter(priority=Repair.Priority.HIGH).count(),
     }
+
+
+def dashboard_oldest_open_repairs_for(user, limit=5):
+    return repairs_visible_to(user).exclude(status__in=[Repair.Status.COMPLETED, Repair.Status.RETURNED]).order_by('created_at')[:limit]
