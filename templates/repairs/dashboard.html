@@ -17,7 +17,7 @@
 
 <div class="row g-4 mt-1">
   <div class="col-lg-7">
-    <div class="card">
+    <div class="card shadow-sm">
       <div class="card-header d-flex justify-content-between align-items-center">
           <span>Vanimad avatud tööd</span>
           <span class="badge text-bg-light" data-summary="high_priority">Kõrge prioriteet: —</span>
@@ -42,7 +42,7 @@
     </div>
   </div>
   <div class="col-lg-5">
-    <div class="card h-100">
+    <div class="card h-100 shadow-sm">
       <div class="card-header">Tööde jaotus staatuse järgi</div>
       <div class="card-body">
         <div class="vstack gap-3" id="dashboard-breakdown">
@@ -53,6 +53,25 @@
         </div>
         <div class="mt-4"><canvas id="dashboard-status-chart" height="180"></canvas></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mt-4">
+  <div class="card-header">Tööde arv parandajate kaupa</div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table mb-0" id="repairer-workload-table">
+        <thead>
+          <tr>
+            <th>Parandaja</th>
+            <th>Tööde arv</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="2" class="text-center text-body-secondary py-4">Laen andmeid…</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -74,13 +93,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     document.querySelectorAll('[data-summary="high_priority_count"]').forEach((el) => { el.textContent = summary.high_priority; });
 
-    const tbody = document.querySelector('#repairs-table tbody');
-    tbody.innerHTML = '';
+    const repairsTbody = document.querySelector('#repairs-table tbody');
+    repairsTbody.innerHTML = '';
     const oldest = summary.oldest_open || [];
     if (!oldest.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-body-secondary py-4">Avatud töid ei ole.</td></tr>';
-      return;
+      repairsTbody.innerHTML = RepairPlanUi.emptyState('Avatud töid ei ole.', 6);
+    } else {
+      repairsTbody.innerHTML = oldest.map((repair) => `
+        <tr>
+          <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
+          <td>${repair.product_code}</td>
+          <td>${repair.department ?? '—'}</td>
+          <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
+          <td>${RepairPlanUi.priorityBadge(repair.priority_label)}</td>
+          <td>${repair.assigned_to ?? '—'}</td>
+        </tr>
+      `).join('');
     }
+
     const chartEl = document.getElementById('dashboard-status-chart');
     if (chartEl && window.Chart) {
       new Chart(chartEl, {
@@ -96,21 +126,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     }
 
-    oldest.forEach((repair) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
-        <td>${repair.product_code}</td>
-        <td>${repair.department ?? '—'}</td>
-        <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
-        <td>${RepairPlanUi.priorityBadge(repair.priority_label)}</td>
-        <td>${repair.assigned_to ?? '—'}</td>
-      `;
-      tbody.appendChild(row);
-    });
+    const workloadTbody = document.querySelector('#repairer-workload-table tbody');
+    const workload = summary.by_repairer || [];
+    workloadTbody.innerHTML = workload.length
+      ? workload.map((item) => `<tr><td>${item.username}</td><td>${item.total}</td></tr>`).join('')
+      : RepairPlanUi.emptyState('Parandajatele määratud töid ei ole.', 2);
   } catch (error) {
-    const tbody = document.querySelector('#repairs-table tbody');
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    document.querySelector('#repairs-table tbody').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    document.querySelector('#repairer-workload-table tbody').innerHTML = `<tr><td colspan="2" class="text-center text-danger py-4">${error.message}</td></tr>`;
   }
 });
 </script>

@@ -165,12 +165,12 @@ Valitud suund:
 - [x] Seada `created_at` automaatselt
 - [x] Piirata osakonna juhi sisestusõigused vastavalt ärireeglitele
 
-### 17. Paranduse detailvaade
+### 17. Paranduse detailvaade ✅
 - [x] Luua detail page
 - [x] Luua detail template skeleton
 - [x] Kuvada põhiandmete baasserverrenderdus
 - [x] Luua detail data endpointid kommentaaride ja ajaloo jaoks
-- [ ] Kuvada rollipõhised tegevused
+- [x] Kuvada rollipõhised tegevused
 
 ### 18. Paranduse muutmise vaade ✅
 - [x] Luua update form(id)
@@ -179,14 +179,14 @@ Valitud suund:
 - [x] Luua vajalikud partial update / action endpointid
 - [x] Rakendada erinevad muutmisõigused rolli järgi
 
-### 19. Parandaja “Minu tööd”
+### 19. Parandaja “Minu tööd” ✅
 - [x] Luua “my work” page
 - [x] Luua vastav template
 - [x] Luua “my work” data endpoint
 - [x] Lubada kiireid staatusemuudatusi lubatud workflow piires
-- [ ] Lubada kommentaari lisamine
+- [x] Lubada kommentaari lisamine
 
-### 20. Dashboard
+### 20. Dashboard ✅
 - [x] Luua dashboard page
 - [x] Luua dashboard template skeleton
 - [x] Luua dashboard summary endpoint
@@ -196,7 +196,7 @@ Valitud suund:
   - [x] lõpetatud tööde arv
   - [x] kõrge prioriteediga tööde arv
   - [x] vanimad avatud tööd
-  - [ ] tööde arv parandajate kaupa
+  - [x] tööde arv parandajate kaupa
 - [x] Lisada Chart.js ainult siis, kui see päriselt parandab loetavust
 
 ---
@@ -209,8 +209,8 @@ Valitud suund:
 - [x] Tagada, et meister saab teha äriliselt lubatud üleminekuid
 - [x] Lisada kasutajasõbralikud veateated keelatud muudatuste korral
 
-### 22. Kommentaarid ja auditlogi viimistleminen
-- [ ] Siduda kommentaaride lisamine detailvaatega
+### 22. Kommentaarid ja auditlogi viimistleminen ✅
+- [x] Siduda kommentaaride lisamine detailvaatega
 - [x] Näidata kommentaaridel autorit ja aega
 - [x] Näidata auditlogis väljanime, vana väärtust, uut väärtust ja muutjat
 - [x] Otsustada, kas kirje loomine logitakse samuti auditisse
@@ -227,11 +227,11 @@ Valitud suund:
 - [x] Lisada superuseri loomise juhis
 - [x] Lisada JS wrapperi ja endpointide lühikokkuvõte
 
-### 25. Testid
+### 25. Testid ✅
 - [x] Lisada permission testid
 - [x] Lisada form testid
-- [ ] Lisada serializer testid
-- [ ] Lisada HTML view testid
+- [x] Lisada serializer testid
+- [x] Lisada HTML view testid
 - [x] Lisada JSON endpointide testid
 - [x] Lisada workflow service testid
 - [x] Lisada vähemalt üks export test
@@ -240,14 +240,14 @@ Valitud suund:
 
 ## P3 — Hilisemad laiendused
 
-### 26. UX laiendused
+### 26. UX laiendused ✅
 - [x] Lisada rohkem korduvkasutatavaid UI komponente
-- [ ] Parandada tabeli jõudlust suurema andmemahu korral
+- [x] Parandada tabeli jõudlust suurema andmemahu korral
 - [x] Lisada rikkam visualiseerimine ainult seal, kus see päriselt aitab
 
-### 27. Teavitused
+### 27. Teavitused ✅
 - [x] Valmistada ette hook’id e-posti teavituste lisamiseks
-- [ ] Lisada võimalik assignment/status notification flow hiljem
+- [x] Lisada võimalik assignment/status notification flow hiljem
 
 ### 28. Infra ja skaleeruvus ✅
 - [x] Lisada PostgreSQL tootmiskonfiguratsioon

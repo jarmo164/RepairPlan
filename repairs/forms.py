@@ -2,8 +2,26 @@ from django import forms
 
 from .models import Repair, RepairComment
 
+BASE_INPUT_CLASS = 'form-control'
+BASE_SELECT_CLASS = 'form-select'
 
-class RepairCreateForm(forms.ModelForm):
+
+class StyledModelForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, forms.Textarea):
+                css = BASE_INPUT_CLASS
+            elif isinstance(widget, (forms.Select, forms.SelectMultiple)):
+                css = BASE_SELECT_CLASS
+            else:
+                css = BASE_INPUT_CLASS
+            existing = widget.attrs.get('class', '')
+            widget.attrs['class'] = f'{existing} {css}'.strip()
+
+
+class RepairCreateForm(StyledModelForm):
     class Meta:
         model = Repair
         fields = [
@@ -13,9 +31,12 @@ class RepairCreateForm(forms.ModelForm):
             'department',
             'comment',
         ]
+        widgets = {
+            'comment': forms.Textarea(attrs={'rows': 3}),
+        }
 
 
-class RepairUpdateForm(forms.ModelForm):
+class RepairUpdateForm(StyledModelForm):
     class Meta:
         model = Repair
         fields = [
@@ -28,12 +49,15 @@ class RepairUpdateForm(forms.ModelForm):
             'assigned_to',
             'comment',
         ]
+        widgets = {
+            'comment': forms.Textarea(attrs={'rows': 3}),
+        }
 
 
-class RepairCommentForm(forms.ModelForm):
+class RepairCommentForm(StyledModelForm):
     class Meta:
         model = RepairComment
         fields = ['comment']
         widgets = {
-            'comment': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'comment': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Lisa kommentaar…'}),
         }

@@ -4,11 +4,13 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h1 class="h3 mb-1">Minu tööd</h1>
-    <p class="text-body-secondary mb-0">Parandajale määratud tööd koos kiire staatuse muutmisega.</p>
+    <p class="text-body-secondary mb-0">Parandajale määratud tööd koos kiire staatuse muutmise ja kommentaaridega.</p>
   </div>
 </div>
 
-<div class="card">
+<div id="my-work-feedback" class="mb-3"></div>
+
+<div class="card shadow-sm">
   <div class="table-responsive">
     <table class="table mb-0" id="my-work-table">
       <thead>
@@ -17,10 +19,11 @@
           <th>Tootekood</th>
           <th>Staatus</th>
           <th>Muuda staatust</th>
+          <th>Kommentaar</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td colspan="4" class="text-center text-body-secondary py-4">Laen töid…</td></tr>
+        <tr><td colspan="5" class="text-center text-body-secondary py-4">Laen töid…</td></tr>
       </tbody>
     </table>
   </div>
@@ -28,9 +31,15 @@
 {% endblock %}
 {% block extra_scripts %}
 <script>
-(async () => {
+(() => {
   const tbody = document.querySelector('#my-work-table tbody');
+  const feedback = document.getElementById('my-work-feedback');
   const statusChoices = {{ status_choices_json|safe }};
+
+  function showFeedback(message, type = 'success') {
+    feedback.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    setTimeout(() => { feedback.innerHTML = ''; }, 3000);
+  }
 
   function buildSelect(currentValue, repairId) {
     const select = document.createElement('select');
@@ -43,27 +52,66 @@
       select.appendChild(option);
     });
     select.addEventListener('change', async () => {
-      await RepairPlanApi.post(`/api/repairs/${repairId}/change-status/`, { status: select.value });
+      try {
+        await RepairPlanApi.post(`/api/repairs/${repairId}/change-status/`, { status: select.value });
+        showFeedback(`Töö #${repairId} staatus uuendatud.`);
+      } catch (error) {
+        showFeedback(error.message, 'danger');
+      }
     });
     return select;
   }
 
-  try {
-    const data = await RepairPlanApi.get('/api/repairs/my-work/');
-    tbody.innerHTML = '';
-    if (!data.results.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-body-secondary py-4">Sulle ei ole praegu töid määratud.</td></tr>';
-      return;
-    }
-    data.results.forEach((repair) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `<td><a href="/repairs/${repair.id}/">#${repair.id}</a></td><td>${repair.product_code}</td><td>${repair.status_label}</td><td></td>`;
-      row.children[3].appendChild(buildSelect(repair.status, repair.id));
-      tbody.appendChild(row);
+  function buildCommentForm(repairId) {
+    const wrapper = document.createElement('form');
+    wrapper.className = 'd-flex gap-2';
+    wrapper.innerHTML = `
+      <input type="text" class="form-control form-control-sm" name="comment" placeholder="Lisa kommentaar…">
+      <button class="btn btn-outline-primary btn-sm" type="submit">Lisa</button>
+    `;
+    wrapper.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const input = wrapper.querySelector('input[name="comment"]');
+      try {
+        await RepairPlanApi.post(`/api/repairs/${repairId}/comments/`, { comment: input.value });
+        input.value = '';
+        showFeedback(`Kommentaar tööle #${repairId} lisatud.`);
+      } catch (error) {
+        showFeedback(error.message, 'danger');
+      }
     });
-  } catch (error) {
-    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    return wrapper;
   }
+
+  async function loadMyWork() {
+    try {
+      const data = await RepairPlanApi.get('/api/repairs/my-work/');
+      tbody.innerHTML = '';
+      if (!data.results.length) {
+        tbody.innerHTML = RepairPlanUi.emptyState('Sulle ei ole praegu töid määratud.', 5);
+        return;
+      }
+      const fragment = document.createDocumentFragment();
+      data.results.forEach((repair) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
+          <td>${repair.product_code}</td>
+          <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
+          <td></td>
+          <td></td>
+        `;
+        row.children[3].appendChild(buildSelect(repair.status, repair.id));
+        row.children[4].appendChild(buildCommentForm(repair.id));
+        fragment.appendChild(row);
+      });
+      tbody.appendChild(fragment);
+    } catch (error) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadMyWork);
 })();
 </script>
 {% endblock %}

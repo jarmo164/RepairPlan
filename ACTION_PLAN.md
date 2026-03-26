@@ -31,7 +31,7 @@ Eesmärk: viia projekt olukorda, kus backlogi avatud või poolikud punktid saava
 
 ## FAAS A — Sulgeme kõik avatud P1/P2 kriitilised augud
 
-### A1. Detailvaate rollipõhine tegevuspaneel
+### A1. Detailvaate rollipõhine tegevuspaneel ✅
 Eesmärk:
 - kuvada detailvaates tegevused sõltuvalt kasutajarollist ja kirje seisust
 
@@ -46,7 +46,7 @@ Valmis kui:
 - detailvaates on visuaalselt nähtavad ainult lubatud tegevused
 - backend jääb ikka tõe allikaks
 
-### A2. Kommentaari lisamine detailvaates
+### A2. Kommentaari lisamine detailvaates ✅
 Eesmärk:
 - viia olemasolev comment POST endpoint päriselt kasutusse detailvaates
 
@@ -60,7 +60,7 @@ Valmis kui:
 - detailvaates saab kommentaari lisada ilma lehte refreshimata
 - uus kommentaar ilmub kohe nähtavale
 
-### A3. Kommentaari lisamine "Minu tööd" vaates
+### A3. Kommentaari lisamine "Minu tööd" vaates ✅
 Eesmärk:
 - täita backlogi avatud punkt ausalt päris funktsionaalsusega
 
@@ -72,7 +72,7 @@ Teha:
 Valmis kui:
 - parandaja saab "Minu tööd" vaatest kommentaari lisada
 
-### A4. Dashboard: tööde arv parandajate kaupa
+### A4. Dashboard: tööde arv parandajate kaupa ✅
 Eesmärk:
 - sulgeda avatud dashboardi puudujääk prompti vastu
 
@@ -88,7 +88,7 @@ Valmis kui:
 
 ## FAAS B — Sulgeme P2 kvaliteedivõlad
 
-### B1. Serializer testid
+### B1. Serializer testid ✅
 Eesmärk:
 - mitte tugineda ainult API testidele
 
@@ -102,7 +102,7 @@ Teha:
 Valmis kui:
 - serializeri väljad, validatsioon ja output on otse testitud
 
-### B2. HTML view testid
+### B2. HTML view testid ✅
 Eesmärk:
 - katta server-renderdatud vaadete põhikäitumine
 
@@ -127,14 +127,14 @@ Valmis kui:
 
 ## FAAS C — UX polish, mis päriselt annab väärtust
 
-### C1. List/detail/my-work UX ühtlustus
+### C1. List/detail/my-work UX ühtlustus ✅
 Teha:
 - parandada vormide field styling
 - lisada selgemad empty state’id
 - ühtlustada nuppude ja badge’ide kasutus
 - lisada edukate tegevuste visuaalne tagasiside JS tegevustele
 
-### C2. Suure andmemahu tabeli jõudlus
+### C2. Suure andmemahu tabeli jõudlus ✅
 Teha:
 - vähendada tarbetuid DOM ümberrenderdusi
 - kasutada väiksemaid render helper’eid
@@ -148,7 +148,7 @@ Valmis kui:
 
 ## FAAS D — Teavitused päris funktsioonina
 
-### D1. Notification flow lõpuni
+### D1. Notification flow lõpuni ✅
 Praegu olemas:
 - hookid
 - settings toggle
@@ -166,14 +166,14 @@ Valmis kui:
 
 ## FAAS E — Alles siis tulevikulaiendused
 
-### E1. Lisaraportid
+### E1. Lisaraportid (deferred)
 Teha ainult siis, kui on päris vajadus.
 Esimene mõistlik kandidaat:
 - backlog by department
 - aging report
 - turnaround time
 
-### E2. `client_or_group` normaliseerimine
+### E2. `client_or_group` normaliseerimine (deferred)
 Teha ainult siis, kui andmekvaliteet või raportid seda päriselt nõuavad.
 Praegu mitte prioriteet.
 
@@ -216,3 +216,16 @@ Kõige mõistlikum on nüüd teha järgmine tööblokk just selles järjekorras:
 - testivõlad
 
 See sulgeb suure osa sellest, mis praegu on backlogis ausalt pooleli, ja teeb süsteemi palju terviklikumaks kui järgmise ilusa lisa ehitamine.
+
+
+## 6. Täitmise staatus
+
+Tehtud selles tööblokis:
+- A1, A2, A3, A4
+- B1, B2
+- C1, C2
+- D1
+
+Teadlikult edasi lükatud:
+- E1 lisaraportid ainult siis, kui tekib päris äriline vajadus
+- E2 `client_or_group` normaliseerimine ainult siis, kui andmekvaliteet või integratsioonid seda nõuavad

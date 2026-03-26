@@ -90,6 +90,30 @@ def can_change_status(user, *, own_assigned_only: bool = False) -> bool:
     return False
 
 
+def can_comment_on_repair(user, repair) -> bool:
+    if not user or not user.is_authenticated:
+        return False
+    if is_administrator(user) or is_repair_master(user):
+        return True
+    if is_repairer(user):
+        return repair.assigned_to_id == user.id
+    if is_department_manager(user):
+        department = getattr(getattr(user, 'profile', None), 'department', None)
+        return bool(department and repair.department_id == department.id)
+    return False
+
+
+def get_repair_action_flags(user, repair) -> dict:
+    own_assigned = bool(repair and repair.assigned_to_id == getattr(user, 'id', None))
+    return {
+        'can_edit': is_administrator(user) or is_repair_master(user) or is_department_manager(user) or own_assigned,
+        'can_assign': can_assign_repairs(user),
+        'can_change_priority': can_change_priority(user),
+        'can_change_status': can_change_status(user, own_assigned_only=own_assigned),
+        'can_comment': can_comment_on_repair(user, repair),
+    }
+
+
 class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     allowed_roles = []
 

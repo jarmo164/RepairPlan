@@ -1,14 +1,17 @@
 {% extends 'base.html' %}
 {% block title %}Parandused · RepairPlan{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
   <div>
     <h1 class="h3 mb-1">Parandused</h1>
     <p class="text-body-secondary mb-0">Filtreeritav nimekiri, mille read laetakse API kaudu.</p>
   </div>
+  <a class="btn btn-primary" href="{% url 'repairs:repair-create' %}">Lisa parandus</a>
 </div>
 
-<div class="card mb-4">
+<div id="repairs-feedback" class="mb-3"></div>
+
+<div class="card mb-4 shadow-sm">
   <div class="card-body">
     <form id="repairs-filter-form" class="row g-3">
       <div class="col-md-4">
@@ -52,7 +55,7 @@
   </div>
 </div>
 
-<div class="card">
+<div class="card shadow-sm">
   <div class="table-responsive">
     <table class="table mb-0" id="repairs-list-table">
       <thead>
@@ -90,7 +93,32 @@
   const nextBtn = document.getElementById('repairs-next-page');
   const summary = document.getElementById('repairs-pagination-summary');
   const exportLink = document.getElementById('export-repairs-link');
+  const feedback = document.getElementById('repairs-feedback');
   let currentPage = 1;
+
+  function showFeedback(message, type = 'success') {
+    feedback.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    setTimeout(() => { feedback.innerHTML = ''; }, 2500);
+  }
+
+  function renderRows(items) {
+    if (!items.length) {
+      tbody.innerHTML = RepairPlanUi.emptyState('Kirjeid ei leitud.', 8);
+      return;
+    }
+    tbody.innerHTML = items.map((repair) => `
+      <tr>
+        <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
+        <td>${repair.product_code}</td>
+        <td>${repair.client_or_group}</td>
+        <td>${repair.department}</td>
+        <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
+        <td>${RepairPlanUi.priorityBadge(repair.priority_label)}</td>
+        <td>${repair.assigned_to ?? '—'}</td>
+        <td>${new Date(repair.created_at).toLocaleString('et-EE')}</td>
+      </tr>
+    `).join('');
+  }
 
   async function loadPage(page = 1) {
     currentPage = page;
@@ -98,34 +126,22 @@
     exportLink.href = `/api/repairs/export/?${params.toString()}`;
     params.set('page', String(page));
     params.set('ordering', '-created_at');
-    const data = await RepairPlanApi.get(`/api/repairs/?${params.toString()}`);
-    tbody.innerHTML = '';
-    if (!data.results.length) {
-      tbody.innerHTML = RepairPlanUi.emptyState('Kirjeid ei leitud.', 8);
-    } else {
-      data.results.forEach((repair) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
-          <td>${repair.product_code}</td>
-          <td>${repair.client_or_group}</td>
-          <td>${repair.department}</td>
-          <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
-          <td>${RepairPlanUi.priorityBadge(repair.priority_label)}</td>
-          <td>${repair.assigned_to ?? '—'}</td>
-          <td>${new Date(repair.created_at).toLocaleString('et-EE')}</td>
-        `;
-        tbody.appendChild(row);
-      });
+    try {
+      const data = await RepairPlanApi.get(`/api/repairs/?${params.toString()}`);
+      renderRows(data.results);
+      summary.textContent = `Leht ${data.pagination.page} / ${data.pagination.pages} · kokku ${data.pagination.count} kirjet`;
+      prevBtn.disabled = !data.pagination.has_previous;
+      nextBtn.disabled = !data.pagination.has_next;
+    } catch (error) {
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">${error.message}</td></tr>`;
+      showFeedback(error.message, 'danger');
     }
-    summary.textContent = `Leht ${data.pagination.page} / ${data.pagination.pages} · kokku ${data.pagination.count} kirjet`;
-    prevBtn.disabled = !data.pagination.has_previous;
-    nextBtn.disabled = !data.pagination.has_next;
   }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     await loadPage(1);
+    showFeedback('Filtrid uuendatud.');
   });
   const searchInput = form.querySelector('input[name="search"]');
   searchInput.addEventListener('input', RepairPlanUi.debounce(() => loadPage(1), 300));

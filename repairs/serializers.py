@@ -72,6 +72,11 @@ class RepairCommentSerializer(serializers.ModelSerializer):
         fields = ['id', 'author', 'comment', 'created_at']
 
 
+class RepairerWorkloadSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    total = serializers.IntegerField()
+
+
 class RepairStatusLogSerializer(serializers.ModelSerializer):
     changed_by = serializers.StringRelatedField()
     field_label = serializers.SerializerMethodField()

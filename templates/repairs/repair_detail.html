@@ -1,20 +1,24 @@
 {% extends 'base.html' %}
 {% block title %}Parandus #{{ repair.id }} · RepairPlan{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
   <div>
     <h1 class="h3 mb-1">Parandus #{{ repair.id }}</h1>
     <p class="text-body-secondary mb-0">Põhiandmed tulevad serverist, kommentaarid ja ajalugu API kaudu.</p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex gap-2 flex-wrap">
     <a class="btn btn-outline-secondary" href="{% url 'repairs:repair-list' %}">Tagasi nimekirja</a>
-    <a class="btn btn-primary" href="{% url 'repairs:repair-update' repair.id %}">Muuda</a>
+    {% if action_flags.can_edit %}
+      <a class="btn btn-primary" href="{% url 'repairs:repair-update' repair.id %}">Muuda</a>
+    {% endif %}
   </div>
 </div>
 
+<div id="detail-feedback" class="mb-3"></div>
+
 <div class="row g-4">
   <div class="col-lg-8">
-    <div class="card mb-4">
+    <div class="card mb-4 shadow-sm">
       <div class="card-header">Põhiandmed</div>
       <div class="card-body">
         <dl class="row mb-0">
@@ -22,15 +26,30 @@
           <dt class="col-sm-4">Kogus</dt><dd class="col-sm-8">{{ repair.quantity }}</dd>
           <dt class="col-sm-4">Klient / grupp</dt><dd class="col-sm-8">{{ repair.client_or_group }}</dd>
           <dt class="col-sm-4">Osakond</dt><dd class="col-sm-8">{{ repair.department }}</dd>
-          <dt class="col-sm-4">Staatus</dt><dd class="col-sm-8"><span class="badge text-bg-secondary">{{ repair.get_status_display }}</span></dd>
-          <dt class="col-sm-4">Prioriteet</dt><dd class="col-sm-8"><span class="badge text-bg-dark">{{ repair.get_priority_display }}</span></dd>
-          <dt class="col-sm-4">Parandaja</dt><dd class="col-sm-8">{{ repair.assigned_to|default:'—' }}</dd>
+          <dt class="col-sm-4">Staatus</dt><dd class="col-sm-8"><span id="repair-status-badge">{{ repair.get_status_display }}</span></dd>
+          <dt class="col-sm-4">Prioriteet</dt><dd class="col-sm-8"><span id="repair-priority-badge">{{ repair.get_priority_display }}</span></dd>
+          <dt class="col-sm-4">Parandaja</dt><dd class="col-sm-8" id="repair-assignee-value">{{ repair.assigned_to|default:'—' }}</dd>
           <dt class="col-sm-4">Algkommentaar</dt><dd class="col-sm-8">{{ repair.comment|default:'—' }}</dd>
         </dl>
       </div>
     </div>
 
-    <div class="card mb-4">
+    {% if action_flags.can_comment %}
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">Lisa kommentaar</div>
+      <div class="card-body">
+        <form id="detail-comment-form" class="vstack gap-3">
+          {% csrf_token %}
+          {{ comment_form.comment }}
+          <div class="d-flex justify-content-end">
+            <button class="btn btn-primary" type="submit">Salvesta kommentaar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card mb-4 shadow-sm">
       <div class="card-header">Kommentaarid</div>
       <div class="card-body">
         <div id="comments-list" class="vstack gap-3">
@@ -41,7 +60,46 @@
   </div>
 
   <div class="col-lg-4">
-    <div class="card mb-4">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">Tegevused</div>
+      <div class="card-body vstack gap-3" id="repair-actions-panel">
+        {% if action_flags.can_assign %}
+        <div>
+          <label class="form-label small text-body-secondary">Määra parandaja</label>
+          <div class="input-group input-group-sm">
+            <select class="form-select" id="assign-select"></select>
+            <button class="btn btn-outline-primary" type="button" id="assign-submit">Salvesta</button>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if action_flags.can_change_priority %}
+        <div>
+          <label class="form-label small text-body-secondary">Muuda prioriteeti</label>
+          <div class="input-group input-group-sm">
+            <select class="form-select" id="priority-select"></select>
+            <button class="btn btn-outline-primary" type="button" id="priority-submit">Salvesta</button>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if action_flags.can_change_status %}
+        <div>
+          <label class="form-label small text-body-secondary">Muuda staatust</label>
+          <div class="input-group input-group-sm">
+            <select class="form-select" id="status-select"></select>
+            <button class="btn btn-outline-primary" type="button" id="status-submit">Salvesta</button>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if not action_flags.can_assign and not action_flags.can_change_priority and not action_flags.can_change_status and not action_flags.can_comment %}
+        <div class="text-body-secondary small">Selle kirje jaoks pole sulle täiendavaid tegevusi saadaval.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
       <div class="card-header">Tegevusajalugu</div>
       <div class="card-body">
         <div id="history-list" class="vstack gap-3 small">
@@ -54,12 +112,35 @@
 {% endblock %}
 {% block extra_scripts %}
 <script>
-(async () => {
+(() => {
+  const repairId = {{ repair.id }};
   const commentsContainer = document.getElementById('comments-list');
   const historyContainer = document.getElementById('history-list');
-  const repairId = {{ repair.id }};
+  const feedback = document.getElementById('detail-feedback');
+  const statusChoices = {{ status_choices_json|safe }};
+  const priorityChoices = {{ priority_choices_json|safe }};
+  const assigneeChoices = {{ assignee_choices_json|safe }};
+  const currentStatus = "{{ repair.status|escapejs }}";
+  const currentPriority = "{{ repair.priority|escapejs }}";
+  const currentAssigneeId = {{ repair.assigned_to_id|default:"null" }};
 
-  try {
+  function showFeedback(message, type = 'success') {
+    feedback.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    setTimeout(() => { feedback.innerHTML = ''; }, 3500);
+  }
+
+  function optionMarkup(items, current, allowEmpty = false) {
+    const options = [];
+    if (allowEmpty) options.push(`<option value="">—</option>`);
+    items.forEach((item) => {
+      const value = Array.isArray(item) ? item[0] : item.id;
+      const label = Array.isArray(item) ? item[1] : item.label;
+      options.push(`<option value="${value}" ${String(value) === String(current ?? '') ? 'selected' : ''}>${label}</option>`);
+    });
+    return options.join('');
+  }
+
+  async function loadComments() {
     const comments = await RepairPlanApi.get(`/api/repairs/${repairId}/comments/`);
     commentsContainer.innerHTML = comments.results.length
       ? comments.results.map((item) => `
@@ -72,7 +153,9 @@
           </div>
         `).join('')
       : '<div class="text-body-secondary">Kommentaare veel pole.</div>';
+  }
 
+  async function loadHistory() {
     const history = await RepairPlanApi.get(`/api/repairs/${repairId}/history/`);
     historyContainer.innerHTML = history.results.length
       ? history.results.map((item) => `
@@ -83,10 +166,78 @@
           </div>
         `).join('')
       : '<div class="text-body-secondary">Muutmislugu veel pole.</div>';
-  } catch (error) {
-    commentsContainer.innerHTML = `<div class="text-danger">${error.message}</div>`;
-    historyContainer.innerHTML = `<div class="text-danger">${error.message}</div>`;
   }
+
+  function updateMeta(detail) {
+    const statusBadge = document.getElementById('repair-status-badge');
+    const priorityBadge = document.getElementById('repair-priority-badge');
+    const assigneeValue = document.getElementById('repair-assignee-value');
+    if (statusBadge) statusBadge.outerHTML = RepairPlanUi.statusBadge(detail.status_label);
+    if (priorityBadge) priorityBadge.outerHTML = RepairPlanUi.priorityBadge(detail.priority_label);
+    if (assigneeValue) assigneeValue.textContent = detail.assigned_to || '—';
+  }
+
+  function wireActionButtons() {
+    const assignSelect = document.getElementById('assign-select');
+    const statusSelect = document.getElementById('status-select');
+    const prioritySelect = document.getElementById('priority-select');
+
+    if (assignSelect) {
+      assignSelect.innerHTML = optionMarkup(assigneeChoices, currentAssigneeId, true);
+      document.getElementById('assign-submit').addEventListener('click', async () => {
+        const value = assignSelect.value ? Number(assignSelect.value) : null;
+        const detail = await RepairPlanApi.post(`/api/repairs/${repairId}/assign/`, { assigned_to: value });
+        updateMeta(detail);
+        await loadHistory();
+        showFeedback('Parandaja uuendatud.');
+      });
+    }
+
+    if (statusSelect) {
+      statusSelect.innerHTML = optionMarkup(statusChoices, currentStatus);
+      document.getElementById('status-submit').addEventListener('click', async () => {
+        const detail = await RepairPlanApi.post(`/api/repairs/${repairId}/change-status/`, { status: statusSelect.value });
+        updateMeta(detail);
+        await loadHistory();
+        showFeedback('Staatus uuendatud.');
+      });
+    }
+
+    if (prioritySelect) {
+      prioritySelect.innerHTML = optionMarkup(priorityChoices, currentPriority);
+      document.getElementById('priority-submit').addEventListener('click', async () => {
+        const detail = await RepairPlanApi.post(`/api/repairs/${repairId}/change-priority/`, { priority: prioritySelect.value });
+        updateMeta(detail);
+        await loadHistory();
+        showFeedback('Prioriteet uuendatud.');
+      });
+    }
+  }
+
+  async function init() {
+    try {
+      wireActionButtons();
+      await Promise.all([loadComments(), loadHistory()]);
+      const commentForm = document.getElementById('detail-comment-form');
+      if (commentForm) {
+        commentForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const textarea = commentForm.querySelector('textarea[name="comment"]');
+          const payload = { comment: textarea.value };
+          await RepairPlanApi.post(`/api/repairs/${repairId}/comments/`, payload);
+          textarea.value = '';
+          await loadComments();
+          showFeedback('Kommentaar lisatud.');
+        });
+      }
+    } catch (error) {
+      commentsContainer.innerHTML = `<div class="text-danger">${error.message}</div>`;
+      historyContainer.innerHTML = `<div class="text-danger">${error.message}</div>`;
+      showFeedback(error.message, 'danger');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
 })();
 </script>
 {% endblock %}

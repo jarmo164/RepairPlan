@@ -9,12 +9,11 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .forms import RepairCommentForm, RepairCreateForm, RepairUpdateForm
-from .models import Department, Repair, RepairComment
+from .models import Department, Repair
 from .permissions import (
     DashboardAccessMixin,
     RepairApiPermission,
@@ -22,9 +21,11 @@ from .permissions import (
     can_change_priority,
     can_change_status,
     can_create_repairs,
+    get_repair_action_flags,
 )
 from .selectors import (
     dashboard_oldest_open_repairs_for,
+    dashboard_repair_counts_by_repairer,
     dashboard_summary_for,
     filter_repairs_for_user,
     my_work_for,
@@ -41,7 +42,7 @@ from .serializers import (
     RepairStatusLogSerializer,
     RepairUpdateSerializer,
 )
-from .services import assign_repair, change_priority, change_status, create_repair, update_repair
+from .services import add_comment, assign_repair, change_priority, change_status, create_repair, update_repair
 
 
 class HomeRedirectView(LoginRequiredMixin, View):
@@ -79,7 +80,14 @@ class MyWorkView(LoginRequiredMixin, View):
     template_name = 'repairs/my_work.html'
 
     def get(self, request):
-        return render(request, self.template_name, {'page_title': 'Minu tööd', 'status_choices_json': json.dumps(list(Repair.Status.choices))})
+        return render(
+            request,
+            self.template_name,
+            {
+                'page_title': 'Minu tööd',
+                'status_choices_json': json.dumps(list(Repair.Status.choices)),
+            },
+        )
 
 
 class RepairCreateView(LoginRequiredMixin, View):
@@ -118,6 +126,15 @@ class RepairDetailView(LoginRequiredMixin, View):
                 'page_title': f'Parandus #{repair.pk}',
                 'repair': repair,
                 'comment_form': RepairCommentForm(),
+                'action_flags': get_repair_action_flags(request.user, repair),
+                'status_choices_json': json.dumps(list(Repair.Status.choices)),
+                'priority_choices_json': json.dumps(list(Repair.Priority.choices)),
+                'assignee_choices_json': json.dumps(
+                    [
+                        {'id': user.id, 'label': user.get_username()}
+                        for user in get_user_model().objects.filter(is_active=True).order_by('username')
+                    ]
+                ),
             },
         )
 
@@ -181,7 +198,7 @@ class RepairsApiView(APIView):
 
     def get(self, request):
         queryset = filter_repairs_for_user(request.user, request.query_params)
-        paginator = Paginator(queryset, per_page=10)
+        paginator = Paginator(queryset.only('id', 'product_code', 'quantity', 'client_or_group', 'created_at', 'updated_at', 'priority', 'status', 'department__name', 'created_by__username', 'assigned_to__username').select_related('department', 'created_by', 'assigned_to'), per_page=10)
         page_number = request.query_params.get('page', 1)
         page_obj = paginator.get_page(page_number)
         serializer = RepairListSerializer(page_obj.object_list, many=True)
@@ -295,7 +312,10 @@ class RepairCommentsApiView(APIView):
         repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
         serializer = RepairCommentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        comment = RepairComment.objects.create(repair=repair, author=request.user, comment=serializer.validated_data['comment'])
+        try:
+            comment = add_comment(repair=repair, author=request.user, comment=serializer.validated_data['comment'])
+        except ValidationError as exc:
+            return Response({'detail': exc.message}, status=status.HTTP_403_FORBIDDEN)
         return Response(RepairCommentSerializer(comment).data, status=status.HTTP_201_CREATED)
 
 
@@ -312,7 +332,13 @@ class DashboardSummaryApiView(APIView):
 
     def get(self, request):
         oldest = RepairListSerializer(dashboard_oldest_open_repairs_for(request.user), many=True).data
-        return Response({**dashboard_summary_for(request.user), 'oldest_open': oldest})
+        return Response(
+            {
+                **dashboard_summary_for(request.user),
+                'oldest_open': oldest,
+                'by_repairer': dashboard_repair_counts_by_repairer(request.user),
+            }
+        )
 
 
 class HealthcheckView(View):

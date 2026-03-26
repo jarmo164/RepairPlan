@@ -2,6 +2,12 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 
+NOTIFICATION_EVENTS = {
+    'assignment': 'repair_assignment',
+    'status_change': 'repair_status_change',
+}
+
+
 def notifications_enabled() -> bool:
     return bool(getattr(settings, 'REPAIRPLAN_NOTIFICATIONS_ENABLED', False) and getattr(settings, 'DEFAULT_FROM_EMAIL', ''))
 

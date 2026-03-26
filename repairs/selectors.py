@@ -1,3 +1,6 @@
+from django.contrib.auth import get_user_model
+from django.db.models import Count
+
 from .models import Repair
 from .permissions import is_administrator, is_department_manager, is_repair_master, is_repairer
 
@@ -69,3 +72,21 @@ def dashboard_summary_for(user):
 
 def dashboard_oldest_open_repairs_for(user, limit=5):
     return repairs_visible_to(user).exclude(status__in=[Repair.Status.COMPLETED, Repair.Status.RETURNED]).order_by('created_at')[:limit]
+
+
+def dashboard_repair_counts_by_repairer(user):
+    visible_qs = repairs_visible_to(user)
+    grouped = (
+        visible_qs.exclude(assigned_to__isnull=True)
+        .values('assigned_to_id', 'assigned_to__username')
+        .annotate(total=Count('id'))
+        .order_by('-total', 'assigned_to__username')
+    )
+    return [
+        {
+            'user_id': row['assigned_to_id'],
+            'username': row['assigned_to__username'],
+            'total': row['total'],
+        }
+        for row in grouped
+    ]

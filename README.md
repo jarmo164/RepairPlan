@@ -123,3 +123,11 @@ python manage.py test
 ## Järgmised sammud
 
 Järgmine loogiline samm on P2 lõpetamine ja seejärel P3/P4 vastavalt vajadusele.
+
+## Notification behavior
+
+Kui `REPAIRPLAN_NOTIFICATIONS_ENABLED=1`, saadetakse e-kirja hookid järgmistes olukordades:
+- parandaja määramisel ainult siis, kui määratud kasutaja tegelikult muutub
+- staatuse muutmisel ainult siis, kui staatus päriselt muutub
+
+Teavitused kasutavad `DEFAULT_FROM_EMAIL` ja standardset Django mail backendit.

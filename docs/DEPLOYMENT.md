@@ -32,3 +32,12 @@ If real production email volume grows, the next sensible step is:
 Current recommendation:
 - do **not** add Celery or RQ yet
 - add queueing only when real operational need appears
+
+
+## Current notification behavior
+
+Notifications are sent only on real state changes:
+- assignment email only when assignee changes
+- status email only when status changes
+
+This avoids duplicate mail on idempotent updates.
