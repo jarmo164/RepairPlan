@@ -44,6 +44,15 @@ from .serializers import (
 from .services import assign_repair, change_priority, change_status, create_repair, update_repair
 
 
+class HomeRedirectView(LoginRequiredMixin, View):
+    def get(self, request):
+        if request.user.is_superuser or request.user.groups.filter(name__in=['repair_master', 'administrator']).exists():
+            return redirect('repairs:dashboard')
+        if request.user.groups.filter(name='repairer').exists():
+            return redirect('repairs:my-work')
+        return redirect('repairs:repair-list')
+
+
 class DashboardView(DashboardAccessMixin, View):
     template_name = 'repairs/dashboard.html'
 

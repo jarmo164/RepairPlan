@@ -17,7 +17,7 @@ class AuthFlowTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse('login'), response.url)
 
-    def test_login_redirects_to_dashboard(self):
+    def test_login_redirects_to_home_router(self):
         response = self.client.post(reverse('login'), {'username': 'authuser', 'password': 'secret12345'})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, reverse('repairs:dashboard'))
+        self.assertEqual(response.url, reverse('repairs:home'))

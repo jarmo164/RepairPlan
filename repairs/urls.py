@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     DashboardSummaryApiView,
     DashboardView,
+    HomeRedirectView,
     HealthcheckView,
     MyWorkApiView,
     MyWorkView,
@@ -23,7 +24,8 @@ from .views import (
 app_name = 'repairs'
 
 urlpatterns = [
-    path('', DashboardView.as_view(), name='dashboard'),
+    path('', HomeRedirectView.as_view(), name='home'),
+    path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('repairs/', RepairListView.as_view(), name='repair-list'),
     path('repairs/new/', RepairCreateView.as_view(), name='repair-create'),
     path('repairs/my-work/', MyWorkView.as_view(), name='my-work'),

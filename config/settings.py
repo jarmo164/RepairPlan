@@ -85,7 +85,7 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'repairs:dashboard'
+LOGIN_REDIRECT_URL = 'repairs:home'
 LOGOUT_REDIRECT_URL = 'login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
