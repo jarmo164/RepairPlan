@@ -29,73 +29,73 @@ Valitud suund:
 
 ## P0 — Vundament
 
-### 1. Projekti bootstrap
-- [ ] Luua Django projekt
-- [ ] Luua `repairs` app
-- [ ] Lisada vajadusel DRF või muu selge JSON endpointi lahendus
-- [ ] Seadistada `settings.py` arendusrežiimi jaoks
-- [ ] Lisada `requirements.txt`
-- [ ] Seadistada templates/static konfiguratsioon
-- [ ] Seadistada auth redirectid
+### 1. Projekti bootstrap ✅
+- [x] Luua Django projekt
+- [x] Luua `repairs` app
+- [x] Lisada vajadusel DRF või muu selge JSON endpointi lahendus
+- [x] Seadistada `settings.py` arendusrežiimi jaoks
+- [x] Lisada `requirements.txt`
+- [x] Seadistada templates/static konfiguratsioon
+- [x] Seadistada auth redirectid
 
-### 2. Base layout ja frontend skeleton
-- [ ] Luua `templates/base.html`
-- [ ] Lisada naviriba
-- [ ] Lisada teadete ala
-- [ ] Lisada globaalne laadimisindikatsioon
-- [ ] Lisada ühised skriptide include’id
-- [ ] Lisada rollipõhine navigatsioonistruktuur
+### 2. Base layout ja frontend skeleton ✅
+- [x] Luua `templates/base.html`
+- [x] Lisada naviriba
+- [x] Lisada teadete ala
+- [x] Lisada globaalne laadimisindikatsioon
+- [x] Lisada ühised skriptide include’id
+- [x] Lisada rollipõhine navigatsioonistruktuur
 
-### 3. Shared JS layer
-- [ ] Luua `static/js/api.js`
-- [ ] Rakendada `GET/POST/PATCH/DELETE` wrapperid
-- [ ] Lisada automaatne CSRF header kirjutavatele päringutele
-- [ ] Lisada JSON request/response käitlus
-- [ ] Lisada globaalne loading state hook
-- [ ] Lisada keskne veatöötluse muster
+### 3. Shared JS layer ✅
+- [x] Luua `static/js/api.js`
+- [x] Rakendada `GET/POST/PATCH/DELETE` wrapperid
+- [x] Lisada automaatne CSRF header kirjutavatele päringutele
+- [x] Lisada JSON request/response käitlus
+- [x] Lisada globaalne loading state hook
+- [x] Lisada keskne veatöötluse muster
 
-### 4. Rakenduse sisemine arhitektuur
-- [ ] Luua failid `models.py`, `forms.py`, `serializers.py`, `views.py`, `urls.py`, `admin.py`
-- [ ] Luua failid `permissions.py`, `selectors.py`, `services.py`
-- [ ] Luua testide baasstruktuur `repairs/tests/`
+### 4. Rakenduse sisemine arhitektuur ✅
+- [x] Luua failid `models.py`, `forms.py`, `serializers.py`, `views.py`, `urls.py`, `admin.py`
+- [x] Luua failid `permissions.py`, `selectors.py`, `services.py`
+- [x] Luua testide baasstruktuur `repairs/tests/`
 
 ---
 
 ## P0 — Tuumikandmemudel
 
-### 5. Department ja kasutajaga seotud mudelid
-- [ ] Luua `Department` mudel
-- [ ] Luua `UserProfile` mudel
-- [ ] Siduda `UserProfile` kasutaja ja osakonnaga
-- [ ] Otsustada profiili automaatloomine
+### 5. Department ja kasutajaga seotud mudelid ✅
+- [x] Luua `Department` mudel
+- [x] Luua `UserProfile` mudel
+- [x] Siduda `UserProfile` kasutaja ja osakonnaga
+- [x] Otsustada profiili automaatloomine
 
-### 6. Repair domeenimudel
-- [ ] Luua `Repair` mudel väljadega:
-  - [ ] `product_code`
-  - [ ] `quantity`
-  - [ ] `client_or_group`
-  - [ ] `department`
-  - [ ] `created_at`
-  - [ ] `created_by`
-  - [ ] `priority`
-  - [ ] `status`
-  - [ ] `assigned_to`
-  - [ ] `comment`
-  - [ ] `updated_at`
-- [ ] Defineerida `Status` choices sisemiste stabiilsete väärtustega
-- [ ] Defineerida `Priority` choices sisemiste stabiilsete väärtustega
-- [ ] Lisada vajalikud indeksid
+### 6. Repair domeenimudel ✅
+- [x] Luua `Repair` mudel väljadega:
+  - [x] `product_code`
+  - [x] `quantity`
+  - [x] `client_or_group`
+  - [x] `department`
+  - [x] `created_at`
+  - [x] `created_by`
+  - [x] `priority`
+  - [x] `status`
+  - [x] `assigned_to`
+  - [x] `comment`
+  - [x] `updated_at`
+- [x] Defineerida `Status` choices sisemiste stabiilsete väärtustega
+- [x] Defineerida `Priority` choices sisemiste stabiilsete väärtustega
+- [x] Lisada vajalikud indeksid
 
-### 7. Kommentaar ja audit
-- [ ] Luua `RepairComment` mudel
-- [ ] Luua `RepairStatusLog` mudel
-- [ ] Valmistada ette auditlogi struktuur staatuse, prioriteedi ja määramise muutuste jaoks
+### 7. Kommentaar ja audit ✅
+- [x] Luua `RepairComment` mudel
+- [x] Luua `RepairStatusLog` mudel
+- [x] Valmistada ette auditlogi struktuur staatuse, prioriteedi ja määramise muutuste jaoks
 
-### 8. Migratsioonid ja admin
-- [ ] Luua migratsioonid
-- [ ] Registreerida kõik mudelid adminis
-- [ ] Lisada admin search/filter/list display konfiguratsioonid
-- [ ] Veenduda, et admin on päriselt kasulik
+### 8. Migratsioonid ja admin ✅
+- [x] Luua migratsioonid
+- [x] Registreerida kõik mudelid adminis
+- [x] Lisada admin search/filter/list display konfiguratsioonid
+- [x] Veenduda, et admin on päriselt kasulik
 
 ---
 

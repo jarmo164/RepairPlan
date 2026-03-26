@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard · RepairPlan{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Dashboard</h1>
+        <p class="text-body-secondary mb-0">Server-renderdatud skeleton, mida JS rikastab summary andmetega.</p>
+    </div>
+</div>
+
+<div class="row g-3" id="dashboard-summary-cards">
+    <div class="col-6 col-lg-3"><div class="card summary-card"><div class="card-body"><div class="text-secondary small">Kokku</div><div class="display-6" data-summary="total">—</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="card summary-card"><div class="card-body"><div class="text-secondary small">Alustamata</div><div class="display-6" data-summary="not_started">—</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="card summary-card"><div class="card-body"><div class="text-secondary small">Töös</div><div class="display-6" data-summary="in_progress">—</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="card summary-card"><div class="card-body"><div class="text-secondary small">Lõpetatud</div><div class="display-6" data-summary="completed">—</div></div></div></div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Kiirvaade parandustest</span>
+        <span class="badge text-bg-light" data-summary="high_priority">Kõrge prioriteet: —</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table mb-0" id="repairs-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tootekood</th>
+                    <th>Osakond</th>
+                    <th>Staatus</th>
+                    <th>Prioriteet</th>
+                    <th>Määratud</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="6" class="text-center text-body-secondary py-4">Laen andmeid…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const summary = await RepairPlanApi.get('/api/dashboard/summary/');
+    Object.entries(summary).forEach(([key, value]) => {
+      document.querySelectorAll(`[data-summary="${key}"]`).forEach((el) => {
+        if (key === 'high_priority' && el.classList.contains('badge')) {
+          el.textContent = `Kõrge prioriteet: ${value}`;
+        } else {
+          el.textContent = value;
+        }
+      });
+    });
+
+    const repairs = await RepairPlanApi.get('/api/repairs/');
+    const tbody = document.querySelector('#repairs-table tbody');
+    tbody.innerHTML = '';
+    if (!repairs.results.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-body-secondary py-4">Kirjeid veel pole.</td></tr>';
+      return;
+    }
+    repairs.results.forEach((repair) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${repair.id}</td>
+        <td>${repair.product_code}</td>
+        <td>${repair.department ?? '—'}</td>
+        <td><span class="badge text-bg-secondary">${repair.status_label}</span></td>
+        <td><span class="badge text-bg-dark">${repair.priority_label}</span></td>
+        <td>${repair.assigned_to ?? '—'}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    const tbody = document.querySelector('#repairs-table tbody');
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${error.message}</td></tr>`;
+  }
+});
+</script>
+{% endblock %}

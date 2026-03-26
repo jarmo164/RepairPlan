@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Logi sisse · RepairPlan{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-3">Logi sisse</h1>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    <div class="mb-3">
+                        <label class="form-label" for="id_username">Kasutajanimi</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_password">Parool</label>
+                        {{ form.password }}
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">Sisene</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
