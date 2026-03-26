@@ -14,53 +14,88 @@ Its core purpose is to centralize repair intake, assignment, prioritization, sta
 
 ---
 
+## Chosen Architecture Direction
+
+RepairPlan will use an **API-first architecture**:
+- **Backend:** Django + Django REST Framework
+- **Frontend:** separate client consuming the API
+- **Database:** SQLite for development, PostgreSQL for production
+
+This means the backend is responsible for:
+- authentication
+- authorization
+- business rules
+- workflow validation
+- auditability
+- filtered data access by role
+
+The frontend is responsible for:
+- presenting the workflow
+- calling the API
+- rendering role-appropriate actions based on API capabilities and user state
+
+---
+
+## Why REST API First
+
+The decision to use REST is not because authentication is simpler — it is not. The reason is architectural flexibility.
+
+This direction is justified when we want:
+- a cleaner backend/frontend separation
+- easier future mobile support
+- easier future integrations with other systems
+- a reusable API surface for multiple clients
+- a system that can grow beyond a single server-rendered web UI
+
+The cost is higher implementation complexity up front, but the payoff is greater long-term flexibility.
+
+---
+
 ## Recommended Tech Stack
 
-- **Backend:** Django
-- **Database:** SQLite for development, PostgreSQL for production
-- **Frontend:** Django Templates + Bootstrap 5
-- **Authentication:** Django built-in auth
-- **Authorization:** Django Groups + server-side permission checks
-- **Auditability:** Dedicated status/change log model
-- **Export:** CSV initially, Excel later if needed
+### Backend
+- **Django**
+- **Django REST Framework**
+- **Django built-in authentication**
+- **Django Groups + permission checks**
+- optional token/session strategy depending on frontend integration approach
 
-### Why this stack
+### Database
+- **SQLite** for development
+- **PostgreSQL** for production
 
-This project does not need a frontend-heavy SPA architecture. Django provides:
-- mature authentication and admin tools
-- fast CRUD development
-- robust ORM and forms
-- strong maintainability for internal business systems
-
-Using Django templates keeps complexity low while still delivering a reliable production-ready UI.
+### Frontend
+- separate frontend application
+- exact framework can remain open for now, but the backend should expose clean REST endpoints from day one
 
 ---
 
 ## Architecture Principles
 
-### 1. Start as a structured monolith
-A monolith is the right choice here. The domain is operational workflow management, not distributed computing.
-
-### 2. Keep domain boundaries clear
-Even inside a monolith, application logic should not be dumped into views.
+### 1. API-first, but not logic-in-views
+Business logic must not be scattered across DRF views/viewsets/serializers.
 
 Recommended separation:
 - `models.py` → data model
-- `views.py` → request/response handling
-- `forms.py` → input validation and form shaping
+- `serializers.py` → transport/input-output schemas
+- `views.py` → endpoint handling
 - `selectors.py` → filtered/read-side query logic
 - `services.py` → state changes, assignments, audit logging
 - `permissions.py` → central role and access rules
 
-### 3. Enforce permissions on the server
-UI hiding is not security. Every list, detail view, and mutation must be permission-aware on the backend.
+### 2. Backend is the source of truth
+The frontend can hide or show buttons, but the backend must strictly enforce:
+- who can view which records
+- who can edit which records
+- who can assign repairers
+- who can change status and priority
+- which workflow transitions are allowed
 
-### 4. Design for growth without overengineering
-The first version should be simple, but it must leave room for:
-- notifications
-- reporting
-- exports
-- future API integrations
+### 3. Domain-first design
+The repair workflow is the real system. API endpoints should reflect domain needs, not random CRUD for its own sake.
+
+### 4. Build for growth without premature fragmentation
+This should still be one backend application with clear internal structure, not a distributed microservice mess.
 
 ---
 
@@ -76,8 +111,8 @@ repairplan/
 │   └── asgi.py
 ├── repairs/
 │   ├── models.py
+│   ├── serializers.py
 │   ├── views.py
-│   ├── forms.py
 │   ├── urls.py
 │   ├── admin.py
 │   ├── permissions.py
@@ -85,14 +120,14 @@ repairplan/
 │   ├── services.py
 │   └── tests/
 ├── templates/
-│   ├── base.html
-│   ├── registration/login.html
-│   └── repairs/
-├── static/
-│   └── css/
+│   └── registration/
 ├── requirements.txt
 └── README.md
 ```
+
+Notes:
+- `templates/registration/` may still exist if Django-admin or server-side login screens are used for internal auth flows.
+- the user-facing workflow UI is expected to live in a separate frontend client.
 
 ---
 
@@ -152,15 +187,13 @@ Suggested fields:
 - `department`
 - optional role-related metadata if needed later
 
-**Recommendation:** use `UserProfile` instead of a custom Django user model for v1.
+**Recommendation:** use `UserProfile` instead of a custom Django user model for v1 unless there is a clear auth-level requirement to replace Django's default user.
 
 ---
 
 ## Enums and Controlled Values
 
 ### Repair Status
-Internal values should be stable English constants, while the UI can show Estonian labels.
-
 Suggested internal values:
 - `NOT_STARTED`
 - `REVIEWED`
@@ -175,7 +208,7 @@ Suggested internal values:
 - `MEDIUM`
 - `LOW`
 
-This avoids future migration pain if UI text changes.
+API responses can expose human-readable labels alongside stable internal values if useful.
 
 ---
 
@@ -205,7 +238,7 @@ Can:
 - change status
 - assign repairers
 - add comments
-- access dashboard and reporting views
+- access dashboard/reporting endpoints
 
 ### Repairer
 Can:
@@ -226,6 +259,39 @@ Can:
 
 ---
 
+## API Design Direction
+
+Suggested endpoint groups:
+
+### Auth / session
+- `POST /api/auth/login/` or session-based equivalent
+- `POST /api/auth/logout/`
+- `GET /api/auth/me/`
+
+### Repairs
+- `GET /api/repairs/`
+- `POST /api/repairs/`
+- `GET /api/repairs/{id}/`
+- `PATCH /api/repairs/{id}/`
+
+### Repair workflow actions
+- `POST /api/repairs/{id}/assign/`
+- `POST /api/repairs/{id}/change-status/`
+- `POST /api/repairs/{id}/change-priority/`
+
+### Comments
+- `GET /api/repairs/{id}/comments/`
+- `POST /api/repairs/{id}/comments/`
+
+### Dashboard / reporting
+- `GET /api/dashboard/summary/`
+- `GET /api/repairs/my-work/`
+- `GET /api/repairs/export/`
+
+This does **not** mean everything must be a generic ViewSet. Domain actions deserve explicit endpoints when they improve clarity.
+
+---
+
 ## Workflow Design
 
 Suggested allowed status transitions:
@@ -241,88 +307,17 @@ Rules:
 - repairers should only be allowed to make limited transitions on their own assigned work
 - repair masters can apply all business-approved transitions
 - all major changes should be logged
+- transition validation should live in the service layer, not be duplicated across serializers and views
 
 ---
 
-## Main Views
+## Frontend Expectations
 
-### Authentication
-- login
-- logout
-- optional password management later
-
-### Repair List
-Features:
-- search by product code
-- filter by department
-- filter by client/group
-- filter by status
-- filter by priority
-- filter by assigned repairer
-- sort by created date
-- paginated table view
-
-### Create Repair
-Simple, fast intake form for department managers.
-
-Automatically set:
-- `created_by`
-- `created_at`
-
-### Repair Detail
-Shows:
-- main record data
-- current assignment
-- comments
-- status log / history
-- contextual actions depending on user role
-
-### Repair Edit
-Behavior depends on role:
-- department manager → limited editing scope
-- repair master → full business editing scope
-- repairer → only work-related updates allowed
-
-### My Work
-Dedicated repairer view showing only assigned work.
-
-### Dashboard
-For repair master / administrators.
-
-Should include:
-- count of not started repairs
-- count of in-progress repairs
-- count of completed repairs
-- count of high-priority repairs
-- oldest open repairs
-- repair counts grouped by assigned technician
-
----
-
-## UI / UX Direction
-
-This should feel like a dependable internal operations tool, not a flashy demo product.
-
-### Principles
-- clear navigation
-- table-first workflow
-- simple forms
-- fast scanning
-- clear visual state labels
-
-### Styling
-- Bootstrap 5 base
-- badge colors for priority and status
-- practical spacing and dense-enough data layouts
-- mobile support is useful, but desktop-first is the correct default
-
-Suggested badge colors:
-- Not started → gray
-- Reviewed → blue
-- In progress → orange
-- On hold → dark/neutral
-- Completed → green
-- Returned → red
+Because the frontend is separate, it should assume:
+- all business-critical permission checks happen on the backend
+- filtered list endpoints return only what the user may see
+- the API may expose metadata for allowed actions if needed later
+- UI role restrictions are convenience, not security
 
 ---
 
@@ -330,7 +325,8 @@ Suggested badge colors:
 
 Required baseline:
 - authenticated access for all write operations
-- CSRF protection
+- secure auth/session/token strategy
+- CSRF protection where applicable
 - server-side validation
 - strict queryset filtering by role and department
 - audit logging for important changes
@@ -340,96 +336,24 @@ Required baseline:
 
 ## Scalability Considerations
 
-Not “big tech scale” — just sane growth planning.
-
 Recommended preparation:
 - PostgreSQL in production
 - indexes for `status`, `priority`, `created_at`, `assigned_to`, `department`
-- pagination on list views
+- pagination on list endpoints
 - service layer for future notifications
 - optional async/background jobs later (Celery or RQ)
-- future REST API only if real integration needs appear
-
----
-
-## Delivery Plan
-
-### Phase 1 — Project Skeleton
-- initialize Django project
-- create `repairs` app
-- configure templates, static files, auth, Bootstrap base layout
-
-### Phase 2 — Data Model
-- Department
-- UserProfile
-- Repair
-- RepairComment
-- RepairStatusLog
-- admin configuration
-- migrations
-
-### Phase 3 — Roles and Permission Layer
-- Django Groups
-- permission helpers
-- filtered selectors/querysets
-- restricted access by role
-
-### Phase 4 — Core Workflow Views
-- repair list
-- create repair
-- repair detail
-- repair update
-- my work view
-
-### Phase 5 — Dashboard
-- KPI summary cards
-- oldest open repairs
-- counts by repairer
-
-### Phase 6 — Audit, Comments, Export
-- timeline comments
-- change logs
-- CSV export
-
-### Phase 7 — Hardening
-- permission tests
-- form tests
-- core view tests
-- README run instructions
-- UX polish
-
----
-
-## MVP Scope
-
-Recommended MVP includes:
-- login
-- roles
-- repair creation
-- repair list with filters
-- detail view
-- my work view
-- master dashboard
-- comments
-- basic audit logging
-
-Can be deferred:
-- email notifications
-- Excel export
-- public API
-- realtime updates
-- complex workflow engine
+- API versioning only when real change pressure appears
 
 ---
 
 ## Final Recommendation
 
-The best implementation path is:
-1. Django monolith
-2. Django templates + Bootstrap UI
-3. Department + UserProfile + Repair + Comment + StatusLog
-4. Django Groups for roles
-5. SQLite for dev, PostgreSQL for production
-6. CSV export and audit logging in the first serious version
+The chosen path for RepairPlan is:
+1. Django + DRF backend
+2. Separate frontend client
+3. Department + UserProfile + Repair + Comment + StatusLog domain model
+4. Django Groups and backend permission enforcement
+5. SQLite for development, PostgreSQL for production
+6. Audit logging and CSV export in the first serious version
 
-This keeps the system maintainable, production-sensible, and fast to build without turning a straightforward operational app into accidental architecture cosplay.
+This increases initial complexity compared to server-rendered templates, but it gives the project a cleaner path toward multiple clients and future integrations.

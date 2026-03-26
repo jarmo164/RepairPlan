@@ -1,6 +1,6 @@
 # RepairPlan
 
-RepairPlan on veebipõhine parandustööde haldamise rakendus, mille eesmärk on asendada Exceli-põhine töövoog struktureeritud, rollipõhise süsteemiga.
+RepairPlan on veebipõhine parandustööde haldamise süsteem, mille eesmärk on asendada Exceli-põhine töövoog struktureeritud, rollipõhise lahendusega.
 
 ## Repo eesmärk
 
@@ -11,30 +11,44 @@ See repo koondab projekti lähteülesande, arhitektuuriotsused ja teostusplaani 
 - `PROMPT.md` — algne lähteülesanne
 - `ARCHITECTURE.md` — arhitektuuri ülevaade ja tehnilised otsused
 - `IMPLEMENTATION_PLAN.md` — detailsem teostusplaan
-- `BACKLOG.md` — prioriseeritud tööde nimekiri järgmisteks sammudeks
+- `BACKLOG.md` — prioriseeritud tööde nimekiri
 
-## Soovitatud lahendus lühidalt
+## Valitud tehniline suund
 
-- **Backend:** Django
-- **Frontend:** Django Templates + Bootstrap 5
-- **Database:** SQLite arenduses, PostgreSQL tootmises
-- **Auth:** Django built-in authentication
-- **Authorization:** Django Groups + serveripoolne permission-kontroll
-- **Core domain:** Department, UserProfile, Repair, RepairComment, RepairStatusLog
+RepairPlan liigub edasi **REST API põhise arhitektuuriga**.
+
+### Backend
+- **Django**
+- **Django REST Framework**
+- **SQLite** arenduses
+- **PostgreSQL** tootmises
+- **Django auth + Groups + backend permission layer**
+
+### Frontend
+- eraldi frontend klient, mis tarbib REST API-t
+- täpne frontend stack otsustatakse rakenduse ehitusfaasis, kuid arhitektuur arvestab eraldi kliendiga algusest peale
+
+## Core domain
+
+- `Department`
+- `UserProfile`
+- `Repair`
+- `RepairComment`
+- `RepairStatusLog`
 
 ## MVP fookus
 
 Esimene pärisversioon peaks sisaldama vähemalt:
-- sisselogimist
-- rollipõhiseid õigusi
-- paranduse loomist
-- filtritega paranduste nimekirja
-- detailvaadet
-- parandaja “Minu tööd” vaadet
-- meistri dashboardi
+- autentimist
+- rollipõhiseid õigusi backendis
+- paranduse loomist API kaudu
+- paranduste nimekirja filtrite ja sorteerimisega
+- detailvaadet / detailandmete endpointi
+- parandaja “Minu tööd” endpointi
+- dashboardi summary endpointi
 - kommentaare
 - auditlogi lihtversiooni
 
 ## Järgmine samm
 
-Järgmine praktiline samm on scaffoldida Django projektistruktuur ja alustada andmemudelitega.
+Järgmine praktiline samm on scaffoldida Django + DRF projektistruktuur ja alustada andmemudelite ning API kihtidega.
