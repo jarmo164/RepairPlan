@@ -12,6 +12,8 @@ See repo sisaldab nüüd juba töötavat Django rakenduse vundamenti koos P0 + P
 - `ARCHITECTURE.md` — arhitektuuri ülevaade ja tehnilised otsused
 - `IMPLEMENTATION_PLAN.md` — detailsem teostusplaan
 - `BACKLOG.md` — prioriseeritud tööde nimekiri
+- `docs/DEPLOYMENT.md` — keskkonna- ja deploy märkmed
+- `docs/INTEGRATIONS.md` — laienduste ja integratsioonide otsustusreeglid
 
 ## Stack
 

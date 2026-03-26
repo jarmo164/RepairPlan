@@ -240,24 +240,24 @@ Valitud suund:
 
 ## P3 — Hilisemad laiendused
 
-### 26. UX laiendused
-- [ ] Lisada rohkem korduvkasutatavaid UI komponente
-- [ ] Parandada tabeli jõudlust suurema andmemahu korral
-- [ ] Lisada rikkam visualiseerimine ainult seal, kus see päriselt aitab
+### 26. UX laiendused ✅
+- [x] Lisada rohkem korduvkasutatavaid UI komponente
+- [x] Parandada tabeli jõudlust suurema andmemahu korral
+- [x] Lisada rikkam visualiseerimine ainult seal, kus see päriselt aitab
 
-### 27. Teavitused
-- [ ] Valmistada ette hook’id e-posti teavituste lisamiseks
-- [ ] Lisada võimalik assignment/status notification flow hiljem
+### 27. Teavitused ✅
+- [x] Valmistada ette hook’id e-posti teavituste lisamiseks
+- [x] Lisada võimalik assignment/status notification flow hiljem
 
-### 28. Infra ja skaleeruvus
-- [ ] Lisada PostgreSQL tootmiskonfiguratsioon
-- [ ] Valmistada ette keskkonnamuutujate põhine seadistus
-- [ ] Hinnata background job lahendust (Celery või RQ)
+### 28. Infra ja skaleeruvus ✅
+- [x] Lisada PostgreSQL tootmiskonfiguratsioon
+- [x] Valmistada ette keskkonnamuutujate põhine seadistus
+- [x] Hinnata background job lahendust (Celery või RQ)
 
-### 29. Laiendused ja integratsioonid
-- [ ] Hinnata väliste integratsioonide API vajadust hiljem
-- [ ] Lisada täiendavad raportid ärilise vajaduse tekkimisel
-- [ ] Vajadusel normaliseerida `client_or_group` eraldi mudeliks
+### 29. Laiendused ja integratsioonid ✅
+- [x] Hinnata väliste integratsioonide API vajadust hiljem
+- [x] Lisada täiendavad raportid ärilise vajaduse tekkimisel
+- [x] Vajadusel normaliseerida `client_or_group` eraldi mudeliks
 
 ---
 
