@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
 {% block title %}Minu tööd · RepairPlan{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
   <div>
     <h1 class="h3 mb-1">Minu tööd</h1>
     <p class="text-body-secondary mb-0">Parandajale määratud tööd koos kiire staatuse muutmise ja kommentaaridega.</p>
   </div>
+</div>
+  <a class="btn btn-outline-secondary" href="{% url 'repairs:repair-list' %}">Ava kõik nähtavad parandused</a>
 </div>
 
 <div id="my-work-feedback" class="mb-3"></div>

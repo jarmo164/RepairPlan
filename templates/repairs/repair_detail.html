@@ -61,11 +61,11 @@
 
   <div class="col-lg-4">
     <div class="card mb-4 shadow-sm">
-      <div class="card-header">Tegevused</div>
+      <div class="card-header">Lubatud tegevused</div>
       <div class="card-body vstack gap-3" id="repair-actions-panel">
         {% if action_flags.can_assign %}
         <div>
-          <label class="form-label small text-body-secondary">Määra parandaja</label>
+          <label class="form-label small text-body-secondary">Meistri tegevus: määra parandaja</label>
           <div class="input-group input-group-sm">
             <select class="form-select" id="assign-select"></select>
             <button class="btn btn-outline-primary" type="button" id="assign-submit">Salvesta</button>
@@ -75,7 +75,7 @@
 
         {% if action_flags.can_change_priority %}
         <div>
-          <label class="form-label small text-body-secondary">Muuda prioriteeti</label>
+          <label class="form-label small text-body-secondary">Meistri tegevus: muuda prioriteeti</label>
           <div class="input-group input-group-sm">
             <select class="form-select" id="priority-select"></select>
             <button class="btn btn-outline-primary" type="button" id="priority-submit">Salvesta</button>
@@ -85,7 +85,7 @@
 
         {% if action_flags.can_change_status %}
         <div>
-          <label class="form-label small text-body-secondary">Muuda staatust</label>
+          <label class="form-label small text-body-secondary">Töö tegevus: muuda staatust</label>
           <div class="input-group input-group-sm">
             <select class="form-select" id="status-select"></select>
             <button class="btn btn-outline-primary" type="button" id="status-submit">Salvesta</button>

@@ -22,6 +22,10 @@ from .permissions import (
     can_change_status,
     can_create_repairs,
     get_repair_action_flags,
+    is_administrator,
+    is_department_manager,
+    is_repair_master,
+    is_repairer,
 )
 from .selectors import (
     dashboard_oldest_open_repairs_for,
@@ -45,6 +49,16 @@ from .serializers import (
 from .services import add_comment, assign_repair, change_priority, change_status, create_repair, update_repair
 
 
+def build_navigation_context(user):
+    return {
+        'is_department_manager': is_department_manager(user),
+        'is_repair_master': is_repair_master(user),
+        'is_repairer': is_repairer(user),
+        'is_administrator': is_administrator(user),
+        'can_create_repairs': can_create_repairs(user),
+    }
+
+
 class HomeRedirectView(LoginRequiredMixin, View):
     def get(self, request):
         if request.user.is_superuser or request.user.groups.filter(name__in=['repair_master', 'administrator']).exists():
@@ -58,7 +72,7 @@ class DashboardView(DashboardAccessMixin, View):
     template_name = 'repairs/dashboard.html'
 
     def get(self, request):
-        return render(request, self.template_name, {'page_title': 'Dashboard'})
+        return render(request, self.template_name, {'page_title': 'Dashboard', **build_navigation_context(request.user)})
 
 
 class RepairListView(LoginRequiredMixin, View):
@@ -72,6 +86,7 @@ class RepairListView(LoginRequiredMixin, View):
             'priority_choices': Repair.Priority.choices,
             'search': request.GET.get('search', ''),
             'filters': request.GET,
+            **build_navigation_context(request.user),
         }
         return render(request, self.template_name, context)
 
@@ -86,6 +101,7 @@ class MyWorkView(LoginRequiredMixin, View):
             {
                 'page_title': 'Minu tööd',
                 'status_choices_json': json.dumps(list(Repair.Status.choices)),
+                **build_navigation_context(request.user),
             },
         )
 
@@ -97,7 +113,7 @@ class RepairCreateView(LoginRequiredMixin, View):
         if not can_create_repairs(request.user):
             messages.error(request, 'Sul puudub õigus parandusi luua.')
             return redirect('repairs:repair-list')
-        return render(request, self.template_name, {'form': RepairCreateForm(), 'page_title': 'Uus parandus', 'mode': 'create'})
+        return render(request, self.template_name, {'form': RepairCreateForm(), 'page_title': 'Uus parandus', 'mode': 'create', **build_navigation_context(request.user)})
 
     def post(self, request):
         if not can_create_repairs(request.user):
@@ -111,7 +127,7 @@ class RepairCreateView(LoginRequiredMixin, View):
                 return redirect('repairs:repair-detail', pk=repair.pk)
             except ValidationError as exc:
                 form.add_error(None, exc.message)
-        return render(request, self.template_name, {'form': form, 'page_title': 'Uus parandus', 'mode': 'create'})
+        return render(request, self.template_name, {'form': form, 'page_title': 'Uus parandus', 'mode': 'create', **build_navigation_context(request.user)})
 
 
 class RepairDetailView(LoginRequiredMixin, View):
@@ -135,6 +151,7 @@ class RepairDetailView(LoginRequiredMixin, View):
                         for user in get_user_model().objects.filter(is_active=True).order_by('username')
                     ]
                 ),
+                **build_navigation_context(request.user),
             },
         )
 
@@ -155,7 +172,7 @@ class RepairUpdateView(LoginRequiredMixin, View):
     def get(self, request, pk):
         repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
         form = self.get_form(request, repair)
-        return render(request, self.template_name, {'form': form, 'page_title': f'Muuda parandust #{repair.pk}', 'mode': 'update', 'repair': repair})
+        return render(request, self.template_name, {'form': form, 'page_title': f'Muuda parandust #{repair.pk}', 'mode': 'update', 'repair': repair, **build_navigation_context(request.user)})
 
     def post(self, request, pk):
         repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
@@ -167,7 +184,7 @@ class RepairUpdateView(LoginRequiredMixin, View):
                 return redirect('repairs:repair-detail', pk=repair.pk)
             except ValidationError as exc:
                 form.add_error(None, exc.message)
-        return render(request, self.template_name, {'form': form, 'page_title': f'Muuda parandust #{repair.pk}', 'mode': 'update', 'repair': repair})
+        return render(request, self.template_name, {'form': form, 'page_title': f'Muuda parandust #{repair.pk}', 'mode': 'update', 'repair': repair, **build_navigation_context(request.user)})
 
 
 class RepairExportCsvView(LoginRequiredMixin, View):

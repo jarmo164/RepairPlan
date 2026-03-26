@@ -20,3 +20,12 @@ body {
 .summary-card {
   min-height: 8rem;
 }
+
+.quick-link-card {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.quick-link-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 .5rem 1rem rgba(0,0,0,.08);
+}
