@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Parandus #{{ repair.id }} · RepairPlan{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Parandus #{{ repair.id }}</h1>
+    <p class="text-body-secondary mb-0">Põhiandmed tulevad serverist, kommentaarid ja ajalugu API kaudu.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{% url 'repairs:repair-list' %}">Tagasi nimekirja</a>
+    <a class="btn btn-primary" href="{% url 'repairs:repair-update' repair.id %}">Muuda</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card mb-4">
+      <div class="card-header">Põhiandmed</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Tootekood</dt><dd class="col-sm-8">{{ repair.product_code }}</dd>
+          <dt class="col-sm-4">Kogus</dt><dd class="col-sm-8">{{ repair.quantity }}</dd>
+          <dt class="col-sm-4">Klient / grupp</dt><dd class="col-sm-8">{{ repair.client_or_group }}</dd>
+          <dt class="col-sm-4">Osakond</dt><dd class="col-sm-8">{{ repair.department }}</dd>
+          <dt class="col-sm-4">Staatus</dt><dd class="col-sm-8"><span class="badge text-bg-secondary">{{ repair.get_status_display }}</span></dd>
+          <dt class="col-sm-4">Prioriteet</dt><dd class="col-sm-8"><span class="badge text-bg-dark">{{ repair.get_priority_display }}</span></dd>
+          <dt class="col-sm-4">Parandaja</dt><dd class="col-sm-8">{{ repair.assigned_to|default:'—' }}</dd>
+          <dt class="col-sm-4">Algkommentaar</dt><dd class="col-sm-8">{{ repair.comment|default:'—' }}</dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header">Kommentaarid</div>
+      <div class="card-body">
+        <div id="comments-list" class="vstack gap-3">
+          <div class="text-body-secondary">Laen kommentaare…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card mb-4">
+      <div class="card-header">Tegevusajalugu</div>
+      <div class="card-body">
+        <div id="history-list" class="vstack gap-3 small">
+          <div class="text-body-secondary">Laen ajalugu…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+(async () => {
+  const commentsContainer = document.getElementById('comments-list');
+  const historyContainer = document.getElementById('history-list');
+  const repairId = {{ repair.id }};
+
+  try {
+    const comments = await RepairPlanApi.get(`/api/repairs/${repairId}/comments/`);
+    commentsContainer.innerHTML = comments.results.length
+      ? comments.results.map((item) => `
+          <div class="border rounded p-3">
+            <div class="d-flex justify-content-between small text-body-secondary mb-2">
+              <strong>${item.author}</strong>
+              <span>${new Date(item.created_at).toLocaleString('et-EE')}</span>
+            </div>
+            <div>${item.comment}</div>
+          </div>
+        `).join('')
+      : '<div class="text-body-secondary">Kommentaare veel pole.</div>';
+
+    const history = await RepairPlanApi.get(`/api/repairs/${repairId}/history/`);
+    historyContainer.innerHTML = history.results.length
+      ? history.results.map((item) => `
+          <div class="border rounded p-3">
+            <div class="fw-semibold">${item.field_name}</div>
+            <div>${item.old_value || '—'} → ${item.new_value || '—'}</div>
+            <div class="text-body-secondary mt-1">${item.changed_by} · ${new Date(item.created_at).toLocaleString('et-EE')}</div>
+          </div>
+        `).join('')
+      : '<div class="text-body-secondary">Muutmislugu veel pole.</div>';
+  } catch (error) {
+    commentsContainer.innerHTML = `<div class="text-danger">${error.message}</div>`;
+    historyContainer.innerHTML = `<div class="text-danger">${error.message}</div>`;
+  }
+})();
+</script>
+{% endblock %}

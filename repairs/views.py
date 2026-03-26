@@ -19,7 +19,13 @@ from .selectors import (
     filter_repairs_for_user,
     repairs_visible_to,
 )
-from .serializers import RepairCreateSerializer, RepairDetailSerializer, RepairListSerializer
+from .serializers import (
+    RepairCommentSerializer,
+    RepairCreateSerializer,
+    RepairDetailSerializer,
+    RepairListSerializer,
+    RepairStatusLogSerializer,
+)
 from .services import create_repair
 
 
@@ -69,6 +75,22 @@ class RepairCreateView(LoginRequiredMixin, View):
         return render(request, self.template_name, {'form': form, 'page_title': 'Uus parandus', 'mode': 'create'})
 
 
+class RepairDetailView(LoginRequiredMixin, View):
+    template_name = 'repairs/repair_detail.html'
+
+    def get(self, request, pk):
+        repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
+        return render(
+            request,
+            self.template_name,
+            {
+                'page_title': f'Parandus #{repair.pk}',
+                'repair': repair,
+                'comment_form': RepairCommentForm(),
+            },
+        )
+
+
 class RepairsApiView(APIView):
     permission_classes = [RepairApiPermission]
 
@@ -97,6 +119,30 @@ class RepairsApiView(APIView):
         except ValidationError as exc:
             return Response({'detail': exc.message}, status=status.HTTP_403_FORBIDDEN)
         return Response(RepairDetailSerializer(repair).data, status=status.HTTP_201_CREATED)
+
+
+class RepairDetailApiView(APIView):
+    permission_classes = [RepairApiPermission]
+
+    def get(self, request, pk):
+        repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
+        return Response(RepairDetailSerializer(repair).data)
+
+
+class RepairCommentsApiView(APIView):
+    permission_classes = [RepairApiPermission]
+
+    def get(self, request, pk):
+        repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
+        return Response({'results': RepairCommentSerializer(repair.comments.select_related('author'), many=True).data})
+
+
+class RepairHistoryApiView(APIView):
+    permission_classes = [RepairApiPermission]
+
+    def get(self, request, pk):
+        repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
+        return Response({'results': RepairStatusLogSerializer(repair.status_logs.select_related('changed_by'), many=True).data})
 
 
 class DashboardSummaryApiView(APIView):
