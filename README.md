@@ -4,7 +4,7 @@ RepairPlan on veebipõhine parandustööde haldamise süsteem, mille eesmärk on
 
 ## Repo eesmärk
 
-See repo koondab projekti lähteülesande, arhitektuuriotsused ja teostusplaani enne rakenduse ehitamist.
+See repo sisaldab nüüd juba töötavat Django rakenduse vundamenti koos P0 + P1 + osa P2 teostusega.
 
 ## Dokumendid
 
@@ -13,56 +13,111 @@ See repo koondab projekti lähteülesande, arhitektuuriotsused ja teostusplaani 
 - `IMPLEMENTATION_PLAN.md` — detailsem teostusplaan
 - `BACKLOG.md` — prioriseeritud tööde nimekiri
 
-## Valitud tehniline suund
+## Stack
 
-RepairPlan liigub edasi **server-renderdatud Django veebirakendusena**, kus:
-- HTML vaated tulevad Django templatemootorist
-- kliendipoolne **vanilla JavaScript** lisab dünaamilise andmelaadimise
-- andmed tulevad sisemistest REST-stiilis API endpointidest
-- lahendus **ei ole SPA** ega vaja rasket frontend build chain’i
+- **Backend:** Django
+- **Data/API layer:** Django REST Framework + sihitud JSON endpointid
+- **Frontend:** Django Templates + Bootstrap + vanilla JavaScript
+- **Database:** SQLite arenduses, PostgreSQL tootmises
+- **Auth:** Django authentication
+- **Permissions:** Django Groups + backend permission layer
 
-### Backend
-- **Django**
-- **Django REST Framework** või kergemad Django JSON endpointid API kihi jaoks
-- **SQLite** arenduses
-- **PostgreSQL** tootmises
-- **Django auth + Groups + backend permission layer**
+## Peamised olemasolevad võimed
 
-### Frontend
-- **Django Templates**
-- **Bootstrap**
-- ikooniteek
-- **vanilla JS**
+- sisselogimine / väljalogimine
+- rollide seemne loomine (`seed_roles`)
+- paranduste nimekiri filtrite, otsingu ja paginationiga
+- paranduse loomine
+- paranduse detailvaade
+- paranduse muutmine
+- "Minu tööd" vaade
+- dashboard summary
+- kommentaaride ja ajaloo endpointid
+- CSV eksport
+
+## Kohalik käivitamine
+
+### 1. Loo virtuaalkeskkond
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 2. Paigalda sõltuvused
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Rakenda migratsioonid
+```bash
+python manage.py migrate
+```
+
+### 4. Loo rolligrupid
+```bash
+python manage.py seed_roles
+```
+
+### 5. Loo administraator
+```bash
+python manage.py createsuperuser
+```
+
+### 6. Käivita arendusserver
+```bash
+python manage.py runserver
+```
+
+Ava brauseris:
+- rakendus: <http://127.0.0.1:8000/>
+- admin: <http://127.0.0.1:8000/admin/>
+
+## Rollid
+
+Vaikimisi kasutatakse järgmisi gruppe:
+- `department_manager`
+- `repair_master`
+- `repairer`
+- `administrator`
+
+## Peamised endpointid
+
+### HTML vaated
+- `/` — dashboard
+- `/repairs/` — paranduste nimekiri
+- `/repairs/new/` — uue paranduse vorm
+- `/repairs/my-work/` — minu tööd
+- `/repairs/<id>/` — detailvaade
+- `/repairs/<id>/edit/` — muutmise vaade
+
+### JSON / API endpointid
+- `/api/repairs/`
+- `/api/repairs/export/`
+- `/api/repairs/my-work/`
+- `/api/repairs/<id>/`
+- `/api/repairs/<id>/assign/`
+- `/api/repairs/<id>/change-status/`
+- `/api/repairs/<id>/change-priority/`
+- `/api/repairs/<id>/comments/`
+- `/api/repairs/<id>/history/`
+- `/api/dashboard/summary/`
+
+## Frontendi tööpõhimõte
+
+Rakendus kasutab mustrit:
+- server-renderdatud HTML skeleton
 - `fetch`-põhine ühine API-wrapper
-- vajadusel **Chart.js** visualiseerimiseks
+- dünaamiline andmelaadimine tabelitele, kokkuvõtetele ja ajaloologle
+- CSRF kaitse kirjutavatel päringutel
+- globaalne loading indicator
 
-## Core domain
+## Testid
 
-- `Department`
-- `UserProfile`
-- `Repair`
-- `RepairComment`
-- `RepairStatusLog`
+Käivita testid:
+```bash
+python manage.py test
+```
 
-## MVP fookus
+## Järgmised sammud
 
-Esimene pärisversioon peaks sisaldama vähemalt:
-- autentimist
-- rollipõhiseid õigusi backendis
-- server-renderdatud põhivaateid
-- paranduste nimekirja filtrite ja sorteerimisega
-- detailvaadet
-- parandaja “Minu tööd” vaadet
-- dashboardi kokkuvõtet
-- kommentaare
-- auditlogi lihtversiooni
-- API kihte dünaamilise andmelaadimise jaoks
-
-## Järgmine samm
-
-Järgmine praktiline samm on scaffoldida Django projektistruktuur ning panna paika:
-- base template
-- auth flow
-- API-wrapperi muster
-- andmemudelid
-- rollipõhine navigeerimine
+Järgmine loogiline samm on P2 lõpetamine ja seejärel P3/P4 vastavalt vajadusele.
