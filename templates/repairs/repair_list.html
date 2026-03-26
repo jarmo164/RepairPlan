@@ -93,9 +93,6 @@
   const exportLink = document.getElementById('export-repairs-link');
   let currentPage = 1;
 
-  function statusBadge(label) { return `<span class="badge text-bg-secondary">${label}</span>`; }
-  function priorityBadge(label) { return `<span class="badge text-bg-dark">${label}</span>`; }
-
   async function loadPage(page = 1) {
     currentPage = page;
     const params = new URLSearchParams(new FormData(form));
@@ -105,7 +102,7 @@
     const data = await RepairPlanApi.get(`/api/repairs/?${params.toString()}`);
     tbody.innerHTML = '';
     if (!data.results.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-body-secondary py-4">Kirjeid ei leitud.</td></tr>';
+      tbody.innerHTML = RepairPlanUi.emptyState('Kirjeid ei leitud.', 8);
     } else {
       data.results.forEach((repair) => {
         const row = document.createElement('tr');
@@ -114,8 +111,8 @@
           <td>${repair.product_code}</td>
           <td>${repair.client_or_group}</td>
           <td>${repair.department}</td>
-          <td>${statusBadge(repair.status_label)}</td>
-          <td>${priorityBadge(repair.priority_label)}</td>
+          <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
+          <td>${RepairPlanUi.priorityBadge(repair.priority_label)}</td>
           <td>${repair.assigned_to ?? '—'}</td>
           <td>${new Date(repair.created_at).toLocaleString('et-EE')}</td>
         `;
@@ -131,6 +128,8 @@
     event.preventDefault();
     await loadPage(1);
   });
+  const searchInput = form.querySelector('input[name="search"]');
+  searchInput.addEventListener('input', RepairPlanUi.debounce(() => loadPage(1), 300));
   prevBtn.addEventListener('click', async () => loadPage(currentPage - 1));
   nextBtn.addEventListener('click', async () => loadPage(currentPage + 1));
   document.addEventListener('DOMContentLoaded', () => loadPage(1));
