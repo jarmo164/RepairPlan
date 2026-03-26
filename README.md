@@ -4,7 +4,7 @@ RepairPlan on veebipõhine parandustööde haldamise süsteem, mille eesmärk on
 
 ## Repo eesmärk
 
-See repo sisaldab nüüd juba töötavat Django rakenduse vundamenti koos P0 + P1 + osa P2 teostusega.
+See repo sisaldab töötavat Django rakenduse vundamenti koos P0 + P1 ja osaliselt lõpetatud P2 teostusega.
 
 ## Dokumendid
 
@@ -85,7 +85,7 @@ Vaikimisi kasutatakse järgmisi gruppe:
 ## Peamised endpointid
 
 ### HTML vaated
-- `/` — dashboard
+- `/` — rollipõhine avalehe suunaja
 - `/repairs/` — paranduste nimekiri
 - `/repairs/new/` — uue paranduse vorm
 - `/repairs/my-work/` — minu tööd

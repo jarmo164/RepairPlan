@@ -230,7 +230,7 @@ Valitud suund:
 ### 25. Testid
 - [x] Lisada permission testid
 - [x] Lisada form testid
-- [x] Lisada serializer testid (kaudselt API testide kaudu)
+- [ ] Lisada serializer testid
 - [ ] Lisada HTML view testid
 - [x] Lisada JSON endpointide testid
 - [x] Lisada workflow service testid
