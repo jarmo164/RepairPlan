@@ -20,22 +20,23 @@
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="{% url 'repairs:dashboard' %}">Dashboard</a></li>
                 {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="#" aria-disabled="true">Parandused</a></li>
-                    {% if user.groups.all %}
-                        {% for group in user.groups.all %}
-                            {% if group.name == 'repair_master' or group.name == 'administrator' %}
-                                <li class="nav-item"><a class="nav-link" href="#" aria-disabled="true">Haldus</a></li>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'repairs:repair-list' %}">Parandused</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'repairs:my-work' %}">Minu tööd</a></li>
+                    {% for group in user.groups.all %}
+                        {% if group.name == 'repair_master' or group.name == 'administrator' %}
+                            <li class="nav-item"><a class="nav-link" href="{% url 'repairs:dashboard' %}">Dashboard</a></li>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
             </ul>
             <div class="d-flex align-items-center gap-3 text-white small">
                 {% if user.is_authenticated %}
                     <span><i class="bi bi-person-circle me-1"></i>{{ user.username }}</span>
-                    <a class="btn btn-outline-light btn-sm" href="{% url 'logout' %}">Logi välja</a>
+                    <form method="post" action="{% url 'logout' %}" class="m-0">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-light btn-sm" type="submit">Logi välja</button>
+                    </form>
                 {% else %}
                     <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}">Logi sisse</a>
                 {% endif %}
