@@ -1,3 +1,4 @@
+import json
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -68,7 +69,7 @@ class MyWorkView(LoginRequiredMixin, View):
     template_name = 'repairs/my_work.html'
 
     def get(self, request):
-        return render(request, self.template_name, {'page_title': 'Minu tööd', 'status_choices': Repair.Status.choices})
+        return render(request, self.template_name, {'page_title': 'Minu tööd', 'status_choices_json': json.dumps(list(Repair.Status.choices))})
 
 
 class RepairCreateView(LoginRequiredMixin, View):

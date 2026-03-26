@@ -30,7 +30,7 @@
 <script>
 (async () => {
   const tbody = document.querySelector('#my-work-table tbody');
-  const statusChoices = {{ status_choices|safe }};
+  const statusChoices = {{ status_choices_json|safe }};
 
   function buildSelect(currentValue, repairId) {
     const select = document.createElement('select');

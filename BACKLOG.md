@@ -101,103 +101,103 @@ Valitud suund:
 
 ## P1 — Rollid, õigused ja äriloogika
 
-### 9. Rollimudel
-- [ ] Luua Django Groupid:
-  - [ ] `department_manager`
-  - [ ] `repair_master`
-  - [ ] `repairer`
-  - [ ] `administrator`
-- [ ] Luua helperid rolli kontrollimiseks
-- [ ] Dokumenteerida rollide õiguste maatriks kooditasemel
+### 9. Rollimudel ✅
+- [x] Luua Django Groupid:
+  - [x] `department_manager`
+  - [x] `repair_master`
+  - [x] `repairer`
+  - [x] `administrator`
+- [x] Luua helperid rolli kontrollimiseks
+- [x] Dokumenteerida rollide õiguste maatriks kooditasemel
 
-### 10. Permission layer
-- [ ] Rakendada `permissions.py`
-- [ ] Jõustada rollipõhine nähtavus HTML vaadetes
-- [ ] Jõustada rollipõhine nähtavus JSON endpointidel
-- [ ] Jõustada osakonna juhi nähtavus ainult oma osakonnale
-- [ ] Jõustada parandaja nähtavus ainult talle määratud töödele
+### 10. Permission layer ✅
+- [x] Rakendada `permissions.py`
+- [x] Jõustada rollipõhine nähtavus HTML vaadetes
+- [x] Jõustada rollipõhine nähtavus JSON endpointidel
+- [x] Jõustada osakonna juhi nähtavus ainult oma osakonnale
+- [x] Jõustada parandaja nähtavus ainult talle määratud töödele
 
-### 11. Selectors layer
-- [ ] Luua selectorid paranduste listimiseks rolli järgi
-- [ ] Luua selector “my work” vaate ja endpointi jaoks
-- [ ] Luua selector dashboard kokkuvõtte jaoks
-- [ ] Hoida päringuloogika vaadetest eraldi
+### 11. Selectors layer ✅
+- [x] Luua selectorid paranduste listimiseks rolli järgi
+- [x] Luua selector “my work” vaate ja endpointi jaoks
+- [x] Luua selector dashboard kokkuvõtte jaoks
+- [x] Hoida päringuloogika vaadetest eraldi
 
-### 12. Services layer
-- [ ] Luua service paranduse loomiseks
-- [ ] Luua service paranduse uuendamiseks
-- [ ] Luua service parandaja määramiseks
-- [ ] Luua service staatuse muutmiseks
-- [ ] Luua service prioriteedi muutmiseks
-- [ ] Lisada auditlogi kirjutamine service tasemel
-- [ ] Lisada workflow valideerimine service tasemel
+### 12. Services layer ✅
+- [x] Luua service paranduse loomiseks
+- [x] Luua service paranduse uuendamiseks
+- [x] Luua service parandaja määramiseks
+- [x] Luua service staatuse muutmiseks
+- [x] Luua service prioriteedi muutmiseks
+- [x] Lisada auditlogi kirjutamine service tasemel
+- [x] Lisada workflow valideerimine service tasemel
 
-### 13. Forms + serializers
-- [ ] Luua server-renderdatud vormid HTML vaadete jaoks
-- [ ] Luua serializerid JSON endpointide jaoks
-- [ ] Veenduda, et forms/serializers ei kanna põhiäriloogikat
+### 13. Forms + serializers ✅
+- [x] Luua server-renderdatud vormid HTML vaadete jaoks
+- [x] Luua serializerid JSON endpointide jaoks
+- [x] Veenduda, et forms/serializers ei kanna põhiäriloogikat
 
 ---
 
 ## P1 — MVP vaated ja endpointid
 
-### 14. Autentimine
-- [ ] Luua login vaade
-- [ ] Seadistada logout
-- [ ] Kontrollida anonüümse kasutaja ligipääsu piiramine
+### 14. Autentimine ✅
+- [x] Luua login vaade
+- [x] Seadistada logout
+- [x] Kontrollida anonüümse kasutaja ligipääsu piiramine
 
-### 15. Paranduste üldnimekiri
-- [ ] Luua server-renderdatud list page
-- [ ] Luua filtrite UI
-- [ ] Luua tabeli skeleton
-- [ ] Luua list data endpoint
-- [ ] Lisada otsing `product_code` järgi
-- [ ] Lisada filtrid: department, client_or_group, status, priority, assigned_to
-- [ ] Lisada sort `created_at` järgi
-- [ ] Lisada pagination
-- [ ] Lisada staatuse/prioriteedi badge’id
+### 15. Paranduste üldnimekiri ✅
+- [x] Luua server-renderdatud list page
+- [x] Luua filtrite UI
+- [x] Luua tabeli skeleton
+- [x] Luua list data endpoint
+- [x] Lisada otsing `product_code` järgi
+- [x] Lisada filtrid: department, client_or_group, status, priority, assigned_to
+- [x] Lisada sort `created_at` järgi
+- [x] Lisada pagination
+- [x] Lisada staatuse/prioriteedi badge’id
 
-### 16. Uue paranduse lisamine
-- [ ] Luua create form
-- [ ] Luua create view
-- [ ] Luua create template
-- [ ] Seada `created_by` automaatselt sessiooni kasutajast
-- [ ] Seada `created_at` automaatselt
-- [ ] Piirata osakonna juhi sisestusõigused vastavalt ärireeglitele
+### 16. Uue paranduse lisamine ✅
+- [x] Luua create form
+- [x] Luua create view
+- [x] Luua create template
+- [x] Seada `created_by` automaatselt sessiooni kasutajast
+- [x] Seada `created_at` automaatselt
+- [x] Piirata osakonna juhi sisestusõigused vastavalt ärireeglitele
 
-### 17. Paranduse detailvaade
-- [ ] Luua detail page
-- [ ] Luua detail template skeleton
-- [ ] Kuvada põhiandmete baasserverrenderdus
-- [ ] Luua detail data endpointid kommentaaride ja ajaloo jaoks
-- [ ] Kuvada rollipõhised tegevused
+### 17. Paranduse detailvaade ✅
+- [x] Luua detail page
+- [x] Luua detail template skeleton
+- [x] Kuvada põhiandmete baasserverrenderdus
+- [x] Luua detail data endpointid kommentaaride ja ajaloo jaoks
+- [x] Kuvada rollipõhised tegevused
 
-### 18. Paranduse muutmise vaade
-- [ ] Luua update form(id)
-- [ ] Luua update view
-- [ ] Luua update template
-- [ ] Luua vajalikud partial update / action endpointid
-- [ ] Rakendada erinevad muutmisõigused rolli järgi
+### 18. Paranduse muutmise vaade ✅
+- [x] Luua update form(id)
+- [x] Luua update view
+- [x] Luua update template
+- [x] Luua vajalikud partial update / action endpointid
+- [x] Rakendada erinevad muutmisõigused rolli järgi
 
-### 19. Parandaja “Minu tööd”
-- [ ] Luua “my work” page
-- [ ] Luua vastav template
-- [ ] Luua “my work” data endpoint
-- [ ] Lubada kiireid staatusemuudatusi lubatud workflow piires
-- [ ] Lubada kommentaari lisamine
+### 19. Parandaja “Minu tööd” ✅
+- [x] Luua “my work” page
+- [x] Luua vastav template
+- [x] Luua “my work” data endpoint
+- [x] Lubada kiireid staatusemuudatusi lubatud workflow piires
+- [x] Lubada kommentaari lisamine
 
-### 20. Dashboard
-- [ ] Luua dashboard page
-- [ ] Luua dashboard template skeleton
-- [ ] Luua dashboard summary endpoint
+### 20. Dashboard ✅
+- [x] Luua dashboard page
+- [x] Luua dashboard template skeleton
+- [x] Luua dashboard summary endpoint
 - [ ] Näidata:
-  - [ ] alustamata tööde arv
-  - [ ] töös tööde arv
-  - [ ] lõpetatud tööde arv
-  - [ ] kõrge prioriteediga tööde arv
-  - [ ] vanimad avatud tööd
-  - [ ] tööde arv parandajate kaupa
-- [ ] Lisada Chart.js ainult siis, kui see päriselt parandab loetavust
+  - [x] alustamata tööde arv
+  - [x] töös tööde arv
+  - [x] lõpetatud tööde arv
+  - [x] kõrge prioriteediga tööde arv
+  - [x] vanimad avatud tööd
+  - [x] tööde arv parandajate kaupa
+- [x] Lisada Chart.js ainult siis, kui see päriselt parandab loetavust (otsustatud: mitte veel lisada)
 
 ---
 
