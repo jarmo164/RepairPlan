@@ -1,22 +1,26 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .forms import RepairCommentForm, RepairCreateForm, RepairUpdateForm
 from .models import Department, Repair
-from .permissions import DashboardAccessMixin, RepairApiPermission
+from .permissions import DashboardAccessMixin, RepairApiPermission, can_create_repairs
 from .selectors import (
     dashboard_oldest_open_repairs_for,
     dashboard_summary_for,
     filter_repairs_for_user,
     repairs_visible_to,
 )
-from .serializers import RepairDetailSerializer, RepairListSerializer
+from .serializers import RepairCreateSerializer, RepairDetailSerializer, RepairListSerializer
+from .services import create_repair
 
 
 class DashboardView(DashboardAccessMixin, View):
@@ -41,6 +45,30 @@ class RepairListView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
 
+class RepairCreateView(LoginRequiredMixin, View):
+    template_name = 'repairs/repair_form.html'
+
+    def get(self, request):
+        if not can_create_repairs(request.user):
+            messages.error(request, 'Sul puudub õigus parandusi luua.')
+            return redirect('repairs:repair-list')
+        return render(request, self.template_name, {'form': RepairCreateForm(), 'page_title': 'Uus parandus', 'mode': 'create'})
+
+    def post(self, request):
+        if not can_create_repairs(request.user):
+            messages.error(request, 'Sul puudub õigus parandusi luua.')
+            return redirect('repairs:repair-list')
+        form = RepairCreateForm(request.POST)
+        if form.is_valid():
+            try:
+                repair = create_repair(created_by=request.user, **form.cleaned_data)
+                messages.success(request, f'Parandus #{repair.id} loodud.')
+                return redirect('repairs:repair-detail', pk=repair.pk)
+            except ValidationError as exc:
+                form.add_error(None, exc.message)
+        return render(request, self.template_name, {'form': form, 'page_title': 'Uus parandus', 'mode': 'create'})
+
+
 class RepairsApiView(APIView):
     permission_classes = [RepairApiPermission]
 
@@ -60,6 +88,15 @@ class RepairsApiView(APIView):
                 'has_previous': page_obj.has_previous(),
             },
         })
+
+    def post(self, request):
+        serializer = RepairCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            repair = create_repair(created_by=request.user, **serializer.validated_data)
+        except ValidationError as exc:
+            return Response({'detail': exc.message}, status=status.HTTP_403_FORBIDDEN)
+        return Response(RepairDetailSerializer(repair).data, status=status.HTTP_201_CREATED)
 
 
 class DashboardSummaryApiView(APIView):
