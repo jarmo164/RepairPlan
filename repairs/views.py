@@ -1,10 +1,11 @@
+import csv
 import json
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from rest_framework import status
@@ -141,6 +142,29 @@ class RepairUpdateView(LoginRequiredMixin, View):
             except ValidationError as exc:
                 form.add_error(None, exc.message)
         return render(request, self.template_name, {'form': form, 'page_title': f'Muuda parandust #{repair.pk}', 'mode': 'update', 'repair': repair})
+
+
+class RepairExportCsvView(LoginRequiredMixin, View):
+    def get(self, request):
+        queryset = filter_repairs_for_user(request.user, request.GET)
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = 'attachment; filename="repairplan-repairs.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'Tootekood', 'Kogus', 'Klient/grupp', 'Osakond', 'Staatus', 'Prioriteet', 'Parandaja', 'Loodud'])
+        for repair in queryset:
+            writer.writerow([
+                repair.id,
+                repair.product_code,
+                repair.quantity,
+                repair.client_or_group,
+                repair.department.name,
+                repair.get_status_display(),
+                repair.get_priority_display(),
+                repair.assigned_to.username if repair.assigned_to else '',
+                repair.created_at.isoformat(),
+            ])
+        return response
 
 
 class RepairsApiView(APIView):

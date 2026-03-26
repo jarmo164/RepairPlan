@@ -46,6 +46,10 @@
         <button class="btn btn-primary w-100" type="submit">Filtreeri</button>
       </div>
     </form>
+  <div class="col-md-12 d-flex justify-content-end">
+        <a class="btn btn-outline-success" id="export-repairs-link" href="/api/repairs/export/">Ekspordi CSV</a>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -86,6 +90,7 @@
   const prevBtn = document.getElementById('repairs-prev-page');
   const nextBtn = document.getElementById('repairs-next-page');
   const summary = document.getElementById('repairs-pagination-summary');
+  const exportLink = document.getElementById('export-repairs-link');
   let currentPage = 1;
 
   function statusBadge(label) { return `<span class="badge text-bg-secondary">${label}</span>`; }
@@ -94,6 +99,7 @@
   async function loadPage(page = 1) {
     currentPage = page;
     const params = new URLSearchParams(new FormData(form));
+    exportLink.href = `/api/repairs/export/?${params.toString()}`;
     params.set('page', String(page));
     params.set('ordering', '-created_at');
     const data = await RepairPlanApi.get(`/api/repairs/?${params.toString()}`);
