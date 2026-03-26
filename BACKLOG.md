@@ -165,12 +165,12 @@ Valitud suund:
 - [x] Seada `created_at` automaatselt
 - [x] Piirata osakonna juhi sisestusõigused vastavalt ärireeglitele
 
-### 17. Paranduse detailvaade ✅
+### 17. Paranduse detailvaade
 - [x] Luua detail page
 - [x] Luua detail template skeleton
 - [x] Kuvada põhiandmete baasserverrenderdus
 - [x] Luua detail data endpointid kommentaaride ja ajaloo jaoks
-- [x] Kuvada rollipõhised tegevused
+- [ ] Kuvada rollipõhised tegevused
 
 ### 18. Paranduse muutmise vaade ✅
 - [x] Luua update form(id)
@@ -179,12 +179,12 @@ Valitud suund:
 - [x] Luua vajalikud partial update / action endpointid
 - [x] Rakendada erinevad muutmisõigused rolli järgi
 
-### 19. Parandaja “Minu tööd” ✅
+### 19. Parandaja “Minu tööd”
 - [x] Luua “my work” page
 - [x] Luua vastav template
 - [x] Luua “my work” data endpoint
 - [x] Lubada kiireid staatusemuudatusi lubatud workflow piires
-- [x] Lubada kommentaari lisamine
+- [ ] Lubada kommentaari lisamine
 
 ### 20. Dashboard
 - [x] Luua dashboard page
