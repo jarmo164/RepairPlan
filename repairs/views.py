@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .forms import RepairCommentForm, RepairCreateForm, RepairUpdateForm
-from .models import Department, Repair
+from .models import Department, Repair, RepairComment
 from .permissions import (
     DashboardAccessMixin,
     RepairApiPermission,
@@ -25,6 +25,7 @@ from .selectors import (
     dashboard_oldest_open_repairs_for,
     dashboard_summary_for,
     filter_repairs_for_user,
+    my_work_for,
     repairs_visible_to,
 )
 from .serializers import (
@@ -61,6 +62,13 @@ class RepairListView(LoginRequiredMixin, View):
             'filters': request.GET,
         }
         return render(request, self.template_name, context)
+
+
+class MyWorkView(LoginRequiredMixin, View):
+    template_name = 'repairs/my_work.html'
+
+    def get(self, request):
+        return render(request, self.template_name, {'page_title': 'Minu tööd', 'status_choices': Repair.Status.choices})
 
 
 class RepairCreateView(LoginRequiredMixin, View):
@@ -164,6 +172,14 @@ class RepairsApiView(APIView):
         return Response(RepairDetailSerializer(repair).data, status=status.HTTP_201_CREATED)
 
 
+class MyWorkApiView(APIView):
+    permission_classes = [RepairApiPermission]
+
+    def get(self, request):
+        serializer = RepairListSerializer(my_work_for(request.user), many=True)
+        return Response({'results': serializer.data})
+
+
 class RepairDetailApiView(APIView):
     permission_classes = [RepairApiPermission]
 
@@ -240,6 +256,13 @@ class RepairCommentsApiView(APIView):
     def get(self, request, pk):
         repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
         return Response({'results': RepairCommentSerializer(repair.comments.select_related('author'), many=True).data})
+
+    def post(self, request, pk):
+        repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
+        serializer = RepairCommentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        comment = RepairComment.objects.create(repair=repair, author=request.user, comment=serializer.validated_data['comment'])
+        return Response(RepairCommentSerializer(comment).data, status=status.HTTP_201_CREATED)
 
 
 class RepairHistoryApiView(APIView):

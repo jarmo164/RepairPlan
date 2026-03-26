@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Minu tööd · RepairPlan{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Minu tööd</h1>
+    <p class="text-body-secondary mb-0">Parandajale määratud tööd koos kiire staatuse muutmisega.</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table mb-0" id="my-work-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tootekood</th>
+          <th>Staatus</th>
+          <th>Muuda staatust</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4" class="text-center text-body-secondary py-4">Laen töid…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+(async () => {
+  const tbody = document.querySelector('#my-work-table tbody');
+  const statusChoices = {{ status_choices|safe }};
+
+  function buildSelect(currentValue, repairId) {
+    const select = document.createElement('select');
+    select.className = 'form-select form-select-sm';
+    statusChoices.forEach(([value, label]) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      option.selected = value === currentValue;
+      select.appendChild(option);
+    });
+    select.addEventListener('change', async () => {
+      await RepairPlanApi.post(`/api/repairs/${repairId}/change-status/`, { status: select.value });
+    });
+    return select;
+  }
+
+  try {
+    const data = await RepairPlanApi.get('/api/repairs/my-work/');
+    tbody.innerHTML = '';
+    if (!data.results.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-body-secondary py-4">Sulle ei ole praegu töid määratud.</td></tr>';
+      return;
+    }
+    data.results.forEach((repair) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `<td><a href="/repairs/${repair.id}/">#${repair.id}</a></td><td>${repair.product_code}</td><td>${repair.status_label}</td><td></td>`;
+      row.children[3].appendChild(buildSelect(repair.status, repair.id));
+      tbody.appendChild(row);
+    });
+  } catch (error) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${error.message}</td></tr>`;
+  }
+})();
+</script>
+{% endblock %}
