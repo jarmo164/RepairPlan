@@ -203,38 +203,38 @@ Valitud suund:
 
 ## P2 — Tootmisküpsemus ja kvaliteet
 
-### 21. Workflow hardening
-- [ ] Kodeerida lubatud staatuse üleminekud ühes kohas
-- [ ] Tagada, et parandaja ei saa teha suvalisi üleminekuid
-- [ ] Tagada, et meister saab teha äriliselt lubatud üleminekuid
-- [ ] Lisada kasutajasõbralikud veateated keelatud muudatuste korral
+### 21. Workflow hardening ✅
+- [x] Kodeerida lubatud staatuse üleminekud ühes kohas
+- [x] Tagada, et parandaja ei saa teha suvalisi üleminekuid
+- [x] Tagada, et meister saab teha äriliselt lubatud üleminekuid
+- [x] Lisada kasutajasõbralikud veateated keelatud muudatuste korral
 
-### 22. Kommentaarid ja auditlogi viimistleminen
-- [ ] Siduda kommentaaride lisamine detailvaatega
-- [ ] Näidata kommentaaridel autorit ja aega
-- [ ] Näidata auditlogis väljanime, vana väärtust, uut väärtust ja muutjat
-- [ ] Otsustada, kas kirje loomine logitakse samuti auditisse
+### 22. Kommentaarid ja auditlogi viimistleminen ✅
+- [x] Siduda kommentaaride lisamine detailvaatega
+- [x] Näidata kommentaaridel autorit ja aega
+- [x] Näidata auditlogis väljanime, vana väärtust, uut väärtust ja muutjat
+- [x] Otsustada, kas kirje loomine logitakse samuti auditisse
 
-### 23. Export
-- [ ] Lisada CSV export
-- [ ] Tagada, et export austab samu permissioneid nagu list vaade/endpoint
-- [ ] Jätta Excel export hilisemaks
+### 23. Export ✅
+- [x] Lisada CSV export
+- [x] Tagada, et export austab samu permissioneid nagu list vaade/endpoint
+- [x] Jätta Excel export hilisemaks
 
-### 24. Dokumentatsioon ja käivitusjuhend
-- [ ] Uuendada `README.md`, et selles oleks käivitusjuhend
-- [ ] Lisada lokaalse arenduse sammud
-- [ ] Lisada migratsioonide käivitamise juhis
-- [ ] Lisada superuseri loomise juhis
-- [ ] Lisada JS wrapperi ja endpointide lühikokkuvõte
+### 24. Dokumentatsioon ja käivitusjuhend ✅
+- [x] Uuendada `README.md`, et selles oleks käivitusjuhend
+- [x] Lisada lokaalse arenduse sammud
+- [x] Lisada migratsioonide käivitamise juhis
+- [x] Lisada superuseri loomise juhis
+- [x] Lisada JS wrapperi ja endpointide lühikokkuvõte
 
-### 25. Testid
-- [ ] Lisada permission testid
-- [ ] Lisada form testid
-- [ ] Lisada serializer testid
-- [ ] Lisada HTML view testid
-- [ ] Lisada JSON endpointide testid
-- [ ] Lisada workflow service testid
-- [ ] Lisada vähemalt üks export test
+### 25. Testid ✅
+- [x] Lisada permission testid
+- [x] Lisada form testid
+- [x] Lisada serializer testid (kaudselt API testide kaudu)
+- [x] Lisada HTML view testid
+- [x] Lisada JSON endpointide testid
+- [x] Lisada workflow service testid
+- [x] Lisada vähemalt üks export test
 
 ---
 
