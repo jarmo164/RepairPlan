@@ -15,18 +15,26 @@ See repo koondab projekti lähteülesande, arhitektuuriotsused ja teostusplaani 
 
 ## Valitud tehniline suund
 
-RepairPlan liigub edasi **REST API põhise arhitektuuriga**.
+RepairPlan liigub edasi **server-renderdatud Django veebirakendusena**, kus:
+- HTML vaated tulevad Django templatemootorist
+- kliendipoolne **vanilla JavaScript** lisab dünaamilise andmelaadimise
+- andmed tulevad sisemistest REST-stiilis API endpointidest
+- lahendus **ei ole SPA** ega vaja rasket frontend build chain’i
 
 ### Backend
 - **Django**
-- **Django REST Framework**
+- **Django REST Framework** või kergemad Django JSON endpointid API kihi jaoks
 - **SQLite** arenduses
 - **PostgreSQL** tootmises
 - **Django auth + Groups + backend permission layer**
 
 ### Frontend
-- eraldi frontend klient, mis tarbib REST API-t
-- täpne frontend stack otsustatakse rakenduse ehitusfaasis, kuid arhitektuur arvestab eraldi kliendiga algusest peale
+- **Django Templates**
+- **Bootstrap**
+- ikooniteek
+- **vanilla JS**
+- `fetch`-põhine ühine API-wrapper
+- vajadusel **Chart.js** visualiseerimiseks
 
 ## Core domain
 
@@ -41,14 +49,20 @@ RepairPlan liigub edasi **REST API põhise arhitektuuriga**.
 Esimene pärisversioon peaks sisaldama vähemalt:
 - autentimist
 - rollipõhiseid õigusi backendis
-- paranduse loomist API kaudu
+- server-renderdatud põhivaateid
 - paranduste nimekirja filtrite ja sorteerimisega
-- detailvaadet / detailandmete endpointi
-- parandaja “Minu tööd” endpointi
-- dashboardi summary endpointi
+- detailvaadet
+- parandaja “Minu tööd” vaadet
+- dashboardi kokkuvõtet
 - kommentaare
 - auditlogi lihtversiooni
+- API kihte dünaamilise andmelaadimise jaoks
 
 ## Järgmine samm
 
-Järgmine praktiline samm on scaffoldida Django + DRF projektistruktuur ja alustada andmemudelite ning API kihtidega.
+Järgmine praktiline samm on scaffoldida Django projektistruktuur ning panna paika:
+- base template
+- auth flow
+- API-wrapperi muster
+- andmemudelid
+- rollipõhine navigeerimine

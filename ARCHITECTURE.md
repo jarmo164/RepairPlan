@@ -16,38 +16,37 @@ Its core purpose is to centralize repair intake, assignment, prioritization, sta
 
 ## Chosen Architecture Direction
 
-RepairPlan will use an **API-first architecture**:
-- **Backend:** Django + Django REST Framework
-- **Frontend:** separate client consuming the API
+RepairPlan will use a **hybrid server-rendered architecture**:
+- **Backend:** Django
+- **UI rendering:** Django Templates
+- **Dynamic data loading:** vanilla JavaScript via `fetch`
+- **API layer:** internal REST-style endpoints for table data, detail fragments, workflow actions, summaries, and exports
 - **Database:** SQLite for development, PostgreSQL for production
 
-This means the backend is responsible for:
-- authentication
-- authorization
-- business rules
-- workflow validation
-- auditability
-- filtered data access by role
+This is **not** a SPA architecture.
 
-The frontend is responsible for:
-- presenting the workflow
-- calling the API
-- rendering role-appropriate actions based on API capabilities and user state
+The application uses:
+- server-rendered HTML for the main shell and page structure
+- client-side enhancement for dynamic updates
+- backend-enforced permissions and workflow rules
+
+This gives us a practical middle ground:
+- simpler than React/Vue SPA architecture
+- more dynamic than purely static server-rendered CRUD pages
+- well suited for internal business systems
 
 ---
 
-## Why REST API First
+## Why This Direction
 
-The decision to use REST is not because authentication is simpler — it is not. The reason is architectural flexibility.
+This architecture is a good fit because it provides:
+- fast development speed
+- a clear and maintainable permission model
+- no unnecessary frontend build complexity
+- reusable API endpoints for dynamic UI behavior
+- a robust user experience for internal operational workflows
 
-This direction is justified when we want:
-- a cleaner backend/frontend separation
-- easier future mobile support
-- easier future integrations with other systems
-- a reusable API surface for multiple clients
-- a system that can grow beyond a single server-rendered web UI
-
-The cost is higher implementation complexity up front, but the payoff is greater long-term flexibility.
+Instead of building a separate frontend client, we keep the app as one coherent Django system while still exposing structured data endpoints where the UI benefits from async loading.
 
 ---
 
@@ -55,33 +54,83 @@ The cost is higher implementation complexity up front, but the payoff is greater
 
 ### Backend
 - **Django**
-- **Django REST Framework**
+- **Django REST Framework** or focused Django JSON endpoints
 - **Django built-in authentication**
 - **Django Groups + permission checks**
-- optional token/session strategy depending on frontend integration approach
 
 ### Database
 - **SQLite** for development
 - **PostgreSQL** for production
 
 ### Frontend
-- separate frontend application
-- exact framework can remain open for now, but the backend should expose clean REST endpoints from day one
+- **Django Templates**
+- **Bootstrap**
+- **Icon library**
+- **Vanilla JavaScript**
+- **Shared fetch-based API wrapper**
+- **Chart.js** when charts are needed
+
+---
+
+## Frontend Rendering Model
+
+The UI follows the pattern:
+
+**server-rendered skeleton + client-side enrichment**
+
+That means:
+1. Django renders the page shell, layout, navigation, and base structure.
+2. The browser loads a shared JS layer.
+3. Specific sections fetch additional data from API endpoints.
+4. The DOM is updated in-place for tables, summaries, status widgets, comments, or charts.
+
+Examples:
+- a list page renders filters and table shell server-side, then loads rows via API
+- a dashboard renders layout and KPI placeholders server-side, then loads metrics and charts asynchronously
+- a detail page renders the base record shell and action areas, then updates comments/history dynamically
+
+---
+
+## Layout and UI Structure
+
+All pages should share a common base template containing:
+- top navigation bar
+- messages/alerts area
+- global loading indicator
+- shared script includes
+- shared UI components
+- role-aware navigation state
+
+Expected reusable UI pieces:
+- filter bar
+- table shell
+- pagination block
+- status badges
+- priority badges
+- modal structure
+- empty states
+- inline feedback messages
+
+---
+
+## Shared JavaScript Layer
+
+A common JavaScript layer should provide:
+- `GET/POST/PATCH/DELETE` helpers
+- automatic JSON request/response handling
+- automatic CSRF header injection for write operations
+- centralized error handling
+- global loading state integration
+- reusable DOM update helpers where practical
+
+This avoids page-level script chaos.
 
 ---
 
 ## Architecture Principles
 
-### 1. API-first, but not logic-in-views
-Business logic must not be scattered across DRF views/viewsets/serializers.
-
-Recommended separation:
-- `models.py` → data model
-- `serializers.py` → transport/input-output schemas
-- `views.py` → endpoint handling
-- `selectors.py` → filtered/read-side query logic
-- `services.py` → state changes, assignments, audit logging
-- `permissions.py` → central role and access rules
+### 1. Server-render first, enrich second
+The system should work from a clear server-rendered page structure, then add dynamic behavior where it improves UX.
 
 ### 2. Backend is the source of truth
 The frontend can hide or show buttons, but the backend must strictly enforce:
@@ -92,10 +141,22 @@ The frontend can hide or show buttons, but the backend must strictly enforce:
 - which workflow transitions are allowed
 
 ### 3. Domain-first design
-The repair workflow is the real system. API endpoints should reflect domain needs, not random CRUD for its own sake.
+The repair workflow is the real system. Templates, endpoints, and services should reflect domain actions, not random CRUD scatter.
 
-### 4. Build for growth without premature fragmentation
-This should still be one backend application with clear internal structure, not a distributed microservice mess.
+### 4. Keep logic out of templates and thin out views
+Do not dump business logic into templates or into fat Django/DRF views.
+
+Recommended separation:
+- `models.py` → data model
+- `forms.py` → server-rendered form logic
+- `serializers.py` → JSON transport schemas where needed
+- `views.py` → HTML views and/or API views
+- `selectors.py` → filtered/read-side query logic
+- `services.py` → state changes, assignments, audit logging
+- `permissions.py` → central role and access rules
+
+### 5. Avoid accidental frontend framework reimplementation
+If the JS layer starts behaving like a poor homemade SPA, we have gone too far.
 
 ---
 
@@ -111,6 +172,7 @@ repairplan/
 │   └── asgi.py
 ├── repairs/
 │   ├── models.py
+│   ├── forms.py
 │   ├── serializers.py
 │   ├── views.py
 │   ├── urls.py
@@ -120,14 +182,27 @@ repairplan/
 │   ├── services.py
 │   └── tests/
 ├── templates/
-│   └── registration/
+│   ├── base.html
+│   ├── registration/
+│   └── repairs/
+├── static/
+│   ├── css/
+│   └── js/
 ├── requirements.txt
 └── README.md
 ```
 
-Notes:
-- `templates/registration/` may still exist if Django-admin or server-side login screens are used for internal auth flows.
-- the user-facing workflow UI is expected to live in a separate frontend client.
+Suggested JS structure:
+
+```text
+static/js/
+├── api.js
+├── ui.js
+├── loading.js
+├── repairs-list.js
+├── repair-detail.js
+└── dashboard.js
+```
 
 ---
 
@@ -208,7 +283,7 @@ Suggested internal values:
 - `MEDIUM`
 - `LOW`
 
-API responses can expose human-readable labels alongside stable internal values if useful.
+JSON responses can expose human-readable labels alongside stable internal values if useful.
 
 ---
 
@@ -238,7 +313,7 @@ Can:
 - change status
 - assign repairers
 - add comments
-- access dashboard/reporting endpoints
+- access dashboard/reporting views and related data endpoints
 
 ### Repairer
 Can:
@@ -259,36 +334,36 @@ Can:
 
 ---
 
-## API Design Direction
+## View and Endpoint Design Direction
 
-Suggested endpoint groups:
+The system should combine:
+- **HTML page views** for main navigation targets
+- **JSON endpoints** for async data loading and workflow actions
 
-### Auth / session
-- `POST /api/auth/login/` or session-based equivalent
-- `POST /api/auth/logout/`
-- `GET /api/auth/me/`
+Suggested page views:
+- login
+- repair list page
+- create repair page
+- repair detail page
+- repair edit page
+- my work page
+- dashboard page
 
-### Repairs
+Suggested data/action endpoints:
 - `GET /api/repairs/`
 - `POST /api/repairs/`
 - `GET /api/repairs/{id}/`
 - `PATCH /api/repairs/{id}/`
-
-### Repair workflow actions
 - `POST /api/repairs/{id}/assign/`
 - `POST /api/repairs/{id}/change-status/`
 - `POST /api/repairs/{id}/change-priority/`
-
-### Comments
 - `GET /api/repairs/{id}/comments/`
 - `POST /api/repairs/{id}/comments/`
-
-### Dashboard / reporting
 - `GET /api/dashboard/summary/`
 - `GET /api/repairs/my-work/`
 - `GET /api/repairs/export/`
 
-This does **not** mean everything must be a generic ViewSet. Domain actions deserve explicit endpoints when they improve clarity.
+This does **not** mean every page must be empty HTML waiting for JS. The page shell should remain useful and understandable even before enrichment finishes.
 
 ---
 
@@ -307,17 +382,7 @@ Rules:
 - repairers should only be allowed to make limited transitions on their own assigned work
 - repair masters can apply all business-approved transitions
 - all major changes should be logged
-- transition validation should live in the service layer, not be duplicated across serializers and views
-
----
-
-## Frontend Expectations
-
-Because the frontend is separate, it should assume:
-- all business-critical permission checks happen on the backend
-- filtered list endpoints return only what the user may see
-- the API may expose metadata for allowed actions if needed later
-- UI role restrictions are convenience, not security
+- transition validation should live in the service layer, not be duplicated across templates and endpoints
 
 ---
 
@@ -325,12 +390,12 @@ Because the frontend is separate, it should assume:
 
 Required baseline:
 - authenticated access for all write operations
-- secure auth/session/token strategy
-- CSRF protection where applicable
+- CSRF protection for write requests
 - server-side validation
 - strict queryset filtering by role and department
 - audit logging for important changes
 - admin access restricted to authorized roles only
+- JS convenience must never replace backend permission enforcement
 
 ---
 
@@ -339,21 +404,23 @@ Required baseline:
 Recommended preparation:
 - PostgreSQL in production
 - indexes for `status`, `priority`, `created_at`, `assigned_to`, `department`
-- pagination on list endpoints
+- pagination on list views and list endpoints
 - service layer for future notifications
 - optional async/background jobs later (Celery or RQ)
-- API versioning only when real change pressure appears
+- keep API endpoints coherent enough to support future integrations if needed
 
 ---
 
 ## Final Recommendation
 
 The chosen path for RepairPlan is:
-1. Django + DRF backend
-2. Separate frontend client
-3. Department + UserProfile + Repair + Comment + StatusLog domain model
-4. Django Groups and backend permission enforcement
-5. SQLite for development, PostgreSQL for production
-6. Audit logging and CSV export in the first serious version
+1. Django server-rendered application
+2. Bootstrap-based UI with shared base template
+3. Vanilla JS enrichment with shared fetch wrapper
+4. Internal JSON/REST-style endpoints for dynamic parts
+5. Department + UserProfile + Repair + Comment + StatusLog domain model
+6. Django Groups and backend permission enforcement
+7. SQLite for development, PostgreSQL for production
+8. Audit logging and CSV export in the first serious version
 
-This increases initial complexity compared to server-rendered templates, but it gives the project a cleaner path toward multiple clients and future integrations.
+This gives the project a practical, maintainable architecture without dragging in a heavyweight SPA stack.

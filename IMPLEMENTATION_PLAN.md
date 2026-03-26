@@ -13,27 +13,30 @@ Peamised kasutajad:
 ## 2. Valitud tehniline lahendus
 
 ### Stack
-- **Backend:** Django + Django REST Framework
+- **Backend:** Django
+- **Data/API layer:** Django REST Framework või sihitud JSON endpointid
 - **Database:** SQLite arenduses, PostgreSQL tootmises
-- **Frontend:** eraldi frontend klient, mis tarbib REST API-t
-- **Auth:** Django authentication baas, rakendatud API-kõlblikult
+- **Frontend:** Django templates + Bootstrap + vanilla JavaScript
+- **Auth:** Django authentication
 - **Permissions:** Django Groups + backend permission layer + queryset filtering
 - **Audit log:** oma lihtne mudel
 - **Export:** CSV esimeses versioonis, Excel tugi hiljem
+- **Charts:** vajadusel Chart.js
 
 ### Miks see valik
-- jätab parema tee mobiilile ja integratsioonidele
-- võimaldab hoida backend loogika ühes kohas ning UI eraldi kihis
-- teeb süsteemi API-first, mitte ainult ühe server-rendered veebivaate külge lukustatuks
-- on alguses keerulisem kui templates-only lahendus, aga paindlikum pikemas plaanis
+- jätab alles lihtsa ja stabiilse Django auth / template mudeli
+- võimaldab dünaamilist andmelaadimist ilma SPA keerukuseta
+- sobib väga hästi sisekasutuse infosüsteemile
+- hoiab õigused ja äriloogika backendis
+- väldib tarbetut frontend build chain’i
 
 ## 3. Arhitektuuri põhimõtted
 
 ### Disainiprintsiibid
-- **Monoliitne backend, selged piirid sees.** Ei ehita mikroteenuste tsirkust.
-- **API-first.** Backend modelleerib domeeni ja reegleid; frontend on tarbija.
+- **Server-rendered first, enrich second.** Esmalt tuleb HTML skeleton serverist, siis JS rikastab.
+- **Monoliitne backend, selged piirid sees.** Ei ehita mikroteenuste karnevali.
 - **Domain-first mudel.** Parandus, kommentaar, auditlogi ja kasutajarollid on süsteemi tuum.
-- **Permission-aware endpoints.** Iga endpoint peab tagastama ainult selle, mida kasutaja tohib näha või muuta.
+- **Permission-aware views ja endpointid.** Iga HTML vaade ja JSON endpoint peab tagastama ainult selle, mida kasutaja tohib näha või muuta.
 - **Simple now, extensible later.** Esimene versioon peab töötama hästi, aga jätma ruumi teavitustele, raportitele ja integratsioonidele.
 
 ### Soovitatud projektistruktuur
@@ -46,6 +49,7 @@ repairplan/
 │   └── wsgi.py / asgi.py
 ├── repairs/
 │   ├── models.py
+│   ├── forms.py
 │   ├── serializers.py
 │   ├── views.py
 │   ├── urls.py
@@ -55,23 +59,55 @@ repairplan/
 │   ├── permissions.py
 │   └── tests/
 ├── templates/
-│   └── registration/
+│   ├── base.html
+│   ├── registration/
+│   └── repairs/
+├── static/
+│   ├── css/
+│   └── js/
 ├── requirements.txt
 └── README.md
 ```
 
 ### Miks `services.py`, `selectors.py`, `permissions.py`, `serializers.py`
 See ei ole overengineering, vaid odav korrastus.
-- `serializers.py` – API sisendi/väljundi skeemid
+- `forms.py` – server-renderdatud vormide valideerimine
+- `serializers.py` – JSON sisendi/väljundi skeemid
 - `selectors.py` – päringuloogika ja rollipõhised querysetid
 - `services.py` – state transitionid, audit log, määramised
 - `permissions.py` – keskne koht rollireeglite jaoks
 
-Nii ei paisu API vaated kiiresti poriseks mudaauguks.
+Nii ei paisu HTML vaated, API endpointid ega JS poriseks mudaauguks.
 
-## 4. Domeenimudel
+## 4. Frontendi põhimuster
 
-## 4.1 Põhiobjektid
+Lahendus töötab mustriga:
+
+**server-renderdatud skeleton + kliendipoolne rikastus**
+
+See tähendab:
+1. server renderdab page shelli, navigatsiooni, filtrid, placeholderid ja põhilise struktuuri
+2. ühine JS kiht laeb detailandmed või tabeliandmed API kaudu
+3. DOM-i uuendatakse lokaalselt seal, kus see on kasulik
+
+### Ühine base template peab sisaldama
+- naviriba
+- teadete ala
+- globaalset laadimisindikatsiooni
+- korduvkasutatavaid UI komponente
+- ühist skriptikihti
+- rollipõhist navigatsiooni
+
+### Ühine JS API-wrapper peab
+- toetama `GET/POST/PATCH/DELETE`
+- lisama automaatselt CSRF kaitse kirjutavatele päringutele
+- tegelema JSON payloadidega
+- kuvama kasutajale globaalse laadimisoleku
+- koondama veatöötluse ühte kohta
+
+## 5. Domeenimudel
+
+## 5.1 Põhiobjektid
 
 ### Repair
 Põhiüksus, mis kirjeldab parandust vajavat toodet.
@@ -119,7 +155,7 @@ Valikud:
 
 **Soovitus:** võtta **UserProfile**, mitte custom user, kui puudub konkreetne auth-mudeli vajadus.
 
-## 4.2 Enumid
+## 5.2 Enumid
 
 ### Priority
 - HIGH
@@ -134,24 +170,24 @@ Valikud:
 - COMPLETED
 - RETURNED
 
-API võib tagastada nii stabiilsed väärtused kui ka inimloetavad labelid.
+JSON vastused võivad tagastada nii stabiilsed väärtused kui ka inimloetavad labelid.
 
-## 5. Rollid ja õigused
+## 6. Rollid ja õigused
 
-## 5.1 Rollid
+## 6.1 Rollid
 Django Groupid:
 - `department_manager`
 - `repair_master`
 - `repairer`
 - `administrator`
 
-## 5.2 Õiguste maatriks
+## 6.2 Õiguste maatriks
 
 ### Osakonna juht
 Saab:
 - lisada uusi parandusi
 - näha ainult enda osakonna parandusi
-- avada detailendpointi enda osakonna kirjetel
+- avada detailvaadet enda osakonna kirjetel
 
 Ei saa:
 - määrata parandajat
@@ -165,7 +201,7 @@ Saab:
 - muuta prioriteeti
 - määrata parandajat
 - lisada kommentaare
-- näha dashboardi ja kokkuvõtte endpoint’e
+- näha dashboardi ja kokkuvõtteid
 
 ### Parandaja
 Saab:
@@ -184,10 +220,10 @@ Saab:
 - näha kogu süsteemi
 - kasutada admin-paneeli
 
-## 5.3 Tähtis otsus
+## 6.3 Tähtis otsus
 UI ei tohi olla turvalisuse allikas. Kõik õigused peavad olema backendis jõustatud.
 
-## 6. Töövoog ja staatuse üleminekud
+## 7. Töövoog ja staatuse üleminekud
 
 Soovitatud lubatud üleminekud:
 - `NOT_STARTED` → `REVIEWED`
@@ -204,63 +240,52 @@ Täiendavad reeglid:
 - kõik staatusemuutused logitakse
 - üleminekute valideerimine peab elama service layeris
 
-## 7. API ulatus
+## 8. Vaated ja endpointid
 
-### 7.1 Auth
-- login endpoint või sessioonipõhine auth API-le sobivas vormis
-- logout
-- current user / me endpoint
+### 8.1 HTML vaated
+Rakenduses peavad olema vähemalt järgmised server-renderdatud vaated:
+- sisselogimise vaade
+- paranduste üldnimekirja vaade
+- uue paranduse lisamise vorm
+- paranduse detailvaade
+- paranduse muutmise vaade
+- minu tööde vaade parandajale
+- kokkuvõtte või dashboardi vaade paranduse meistrile
 
-### 7.2 Repairs API
-- list
-- create
-- retrieve
-- partial update
-- assign repairer action
-- change status action
-- change priority action
-
-### 7.3 Comments API
-- list repair comments
-- create repair comment
-
-### 7.4 Dashboard API
-- summary endpoint
+### 8.2 JSON / API endpointid
+Dünaamilise andmelaadimise jaoks:
+- repairs list endpoint
+- repairs detail endpoint
+- repairs partial update endpoint
+- assign action endpoint
+- status change endpoint
+- priority change endpoint
+- comments list/create endpointid
+- dashboard summary endpoint
 - my work endpoint
 - export endpoint
 
-## 8. Frontendi suunised
+## 9. UI / UX suunised
 
-Kuigi frontend stack ei ole veel lõplikult lukus, peab backend olema sellele valmis.
+### Bootstrap-põhine kasutajaliides
+- ühine baasmall
+- naviriba
+- tabelid
+- vormid
+- modaalid
+- badge’id staatuse ja prioriteedi jaoks
+- teadete ala
+- globaalne loading state
 
-Põhimõtted:
-- frontend ei tohi dubleerida backend security loogikat “tõe allikana”
-- frontend võib peita nuppe, aga backend peab otsustama loa
-- endpointid peavad olema piisavalt selged, et frontend ei peaks ärireegleid tuletama fragmenteeritud CRUD-ist
-
-## 9. Andmemudeliga seotud praktilised otsused
-
-### Department
-Valikud:
-1. hoida tekstiväljana
-2. teha eraldi `Department` mudel
-
-**Soovitus:** tee kohe eraldi `Department` mudel.
-
-### Client or product group
-Esimeses versioonis võib olla tekstiväli. Kui hiljem on vaja normaliseerida, saab sellest teha eraldi mudeli.
-
-### Comment põhimudelis
-Prompt nõuab `comment` välja, aga ainult sellest jääb kiiresti väheks.
-
-**Soovitus:**
-- jäta `Repair.comment` kui lühike algkommentaar / sissekande märkus
-- lisa eraldi `RepairComment`, et töö käigus lisatavad kommentaarid oleks normaalselt hallatavad
+### Lehtede tööpõhimõte
+- skeleton renderdatakse serverist
+- tabeliread, kokkuvõtteplokid ja muud dünaamilised osad laetakse vajadusel API kaudu
+- Chart.js kasutatakse ainult seal, kus visuaal päriselt annab väärtust
 
 ## 10. Turvalisus ja andmekontroll
 
 - kõik kirjutavad tegevused ainult autentitud kasutajatele
-- turvaline auth/session/token strateegia
+- CSRF kaitse kirjutavatel päringutel
 - serveripoolne valideerimine kõikidel sisenditel
 - query filtering rolli ja osakonna alusel
 - audit log kriitiliste muudatuste jaoks
@@ -271,21 +296,22 @@ Prompt nõuab `comment` välja, aga ainult sellest jääb kiiresti väheks.
 Kasvusuunad:
 - PostgreSQL tootmises
 - indekseerimine väljadele: `status`, `priority`, `created_at`, `assigned_to`, `department`
-- pagination list endpointidel
+- pagination list vaadetes ja endpointidel
 - background jobs teavituste jaoks hiljem (Celery/RQ)
-- võimalik hilisem API versioneerimine
+- võimalik hilisem väliste integratsioonide API kiht
 
 ## 12. Arendusetapid
 
 ## Etapp 1 – Projektiskelet
-Eesmärk: backend käima.
+Eesmärk: backend ja HTML raamistik käima.
 
 Tulemus:
 - Django projekt loodud
 - `repairs` app loodud
-- DRF lisatud
 - settings korrastatud
 - auth baas seadistatud
+- base template loodud
+- JS wrapperi raamistik loodud
 
 ## Etapp 2 – Andmemudel ja admin
 Eesmärk: tuumik paika.
@@ -306,16 +332,17 @@ Tulemus:
 - Django grupid
 - helperid rollide kontrolliks
 - queryset filtering
-- endpoint permissionid
+- HTML vaadete ja endpointide permissionid
 
-## Etapp 4 – API põhifunktsioonid
+## Etapp 4 – HTML vaated + API rikastus
 Eesmärk: põhitöövoog töötab.
 
 Tulemus:
-- repairs list/create/retrieve/update
-- comments create/list
-- my work
-- dashboard summary
+- repairs list/create/detail/update vaated
+- my work vaade
+- dashboard vaade
+- vajalikud data endpointid
+- ühine API wrapper
 
 ## Etapp 5 – Audit, workflow, export
 Eesmärk: süsteem oleks päriselu jaoks piisavalt küps.
@@ -331,8 +358,9 @@ Eesmärk: vähem üllatusi tootmises.
 
 Tulemus:
 - permission testid
+- form testid
 - serializer testid
-- API view testid
+- view testid
 - service testid
 - README käivitusjuhend
 
@@ -341,9 +369,10 @@ Tulemus:
 MVP sisaldab:
 - autentimist
 - rollid
-- repair create/list/retrieve/update API
-- my work endpoint
-- dashboard summary endpoint
+- server-renderdatud põhivaated
+- JSON endpointid dünaamiliste osade jaoks
+- my work
+- dashboard
 - kommentaarid
 - auditlogi lihtversioon
 
@@ -352,43 +381,44 @@ MVP-st võib välja jätta:
 - Excel export
 - keeruline workflow engine
 - realtime uuendused
-- avalik API-partnerlus
+- raske frontend framework
 
 ## 14. Riskid ja tähelepanekud
 
-### Risk 1 – auth ja frontend integratsioon muutub poriseks
-Kui auth strateegia jäetakse hägusaks, tekib kiiresti jama.
+### Risk 1 – JS kiht muutub mini-SPA sodiks
 
-**Leevendus:** otsustada varakult, kas kasutatakse session authi, token authi või JWT-d.
+**Leevendus:** hoida JS fokusseeritud rikastuskihina, mitte rakenduse teise ajustikuna.
 
-### Risk 2 – permission-loogika valgub serializeritesse ja viewdesse laiali
+### Risk 2 – permission-loogika valgub vaadetesse ja endpointidesse laiali
 
 **Leevendus:** keskne `permissions.py` + `selectors.py` + `services.py`.
 
-### Risk 3 – API muutub suvaliseks CRUD hunnikuks
+### Risk 3 – lehed muutuvad tühjaks skeletoniks ilma kasutatava baasrenderduseta
 
-**Leevendus:** teha domeenipõhised action endpointid, mitte ainult pime CRUD.
+**Leevendus:** server-renderdatud HTML peab jääma sisuliseks, mitte ainult loading screeniks.
 
-### Risk 4 – frontend hakkab äriloogikat dubleerima
+### Risk 4 – API wrapper dubleerib suvalist loogikat iga lehe peal
 
-**Leevendus:** hoida tõeline äriloogika backendis.
+**Leevendus:** hoida ühine fetch wrapper ja standardsed DOM update mustrid.
 
 ## 15. Minu konkreetne soovitus
 
 Parim tee on:
-1. **Django + DRF backend**
-2. **eraldi frontend klient**
-3. **Department + UserProfile + Repair + Comment + StatusLog**
-4. **Django Groups põhine rollimudel**
-5. **SQLite dev / PostgreSQL prod**
-6. **CSV export ja auditlog esimesse pärisversiooni**
+1. **Django server-renderdatud rakendus**
+2. **Bootstrap + vanilla JS**
+3. **ühine fetch-põhine API wrapper**
+4. **Department + UserProfile + Repair + Comment + StatusLog**
+5. **Django Groups põhine rollimudel**
+6. **SQLite dev / PostgreSQL prod**
+7. **CSV export ja auditlog esimesse pärisversiooni**
 
 ## 16. Järgmised sammud
 
 Pärast selle plaani kinnitamist teeksin kohe järgmises järjekorras:
-1. Django + DRF projekti skeleton
-2. andmemudelid + migratsioonid
-3. grupid + permission helperid
-4. serializers + endpoints
-5. dashboard + my work
-6. auditlog + kommentaarid + export
+1. Django projekti skeleton
+2. base template + JS wrapper skeleton
+3. andmemudelid + migratsioonid
+4. grupid + permission helperid
+5. HTML vaated + JSON endpointid
+6. dashboard + my work
+7. auditlog + kommentaarid + export
