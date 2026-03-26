@@ -245,19 +245,19 @@ Valitud suund:
 - [ ] Parandada tabeli jõudlust suurema andmemahu korral
 - [x] Lisada rikkam visualiseerimine ainult seal, kus see päriselt aitab
 
-### 27. Teavitused ✅
+### 27. Teavitused
 - [x] Valmistada ette hook’id e-posti teavituste lisamiseks
-- [x] Lisada võimalik assignment/status notification flow hiljem
+- [ ] Lisada võimalik assignment/status notification flow hiljem
 
 ### 28. Infra ja skaleeruvus ✅
 - [x] Lisada PostgreSQL tootmiskonfiguratsioon
 - [x] Valmistada ette keskkonnamuutujate põhine seadistus
 - [x] Hinnata background job lahendust (Celery või RQ)
 
-### 29. Laiendused ja integratsioonid ✅
+### 29. Laiendused ja integratsioonid
 - [x] Hinnata väliste integratsioonide API vajadust hiljem
-- [x] Lisada täiendavad raportid ärilise vajaduse tekkimisel
-- [x] Vajadusel normaliseerida `client_or_group` eraldi mudeliks
+- [ ] Lisada täiendavad raportid ärilise vajaduse tekkimisel
+- [ ] Vajadusel normaliseerida `client_or_group` eraldi mudeliks
 
 ---
 
