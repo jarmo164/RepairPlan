@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 
 from .models import Repair, RepairStatusLog
+from .notifications import send_assignment_notification, send_status_change_notification
 from .permissions import can_assign_repairs, can_change_priority, can_change_status, can_create_repairs, is_repair_master
 
 ALLOWED_STATUS_TRANSITIONS = {
@@ -86,7 +87,9 @@ def assign_repair(*, repair, assigned_to, changed_by):
     old_value = repair.assigned_to_id
     repair.assigned_to = assigned_to
     repair.save(update_fields=['assigned_to', 'updated_at'])
-    return log_change(repair=repair, changed_by=changed_by, field_name='assigned_to', old_value=old_value, new_value=assigned_to.pk if assigned_to else '')
+    log = log_change(repair=repair, changed_by=changed_by, field_name='assigned_to', old_value=old_value, new_value=assigned_to.pk if assigned_to else '')
+    send_assignment_notification(repair=repair, assigned_to=assigned_to, changed_by=changed_by)
+    return log
 
 
 def change_priority(*, repair, priority, changed_by):
@@ -103,4 +106,6 @@ def change_status(*, repair, status, changed_by):
     current = repair.status
     repair.status = status
     repair.save(update_fields=['status', 'updated_at'])
-    return log_change(repair=repair, changed_by=changed_by, field_name='status', old_value=current, new_value=status)
+    log = log_change(repair=repair, changed_by=changed_by, field_name='status', old_value=current, new_value=status)
+    send_status_change_notification(repair=repair, changed_by=changed_by)
+    return log

@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -85,3 +86,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ],
 }
+
+REPAIRPLAN_NOTIFICATIONS_ENABLED = os.getenv('REPAIRPLAN_NOTIFICATIONS_ENABLED', '0') in {'1', 'true', 'True'}
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', '')
