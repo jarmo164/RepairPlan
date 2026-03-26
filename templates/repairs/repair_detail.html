@@ -77,7 +77,7 @@
     historyContainer.innerHTML = history.results.length
       ? history.results.map((item) => `
           <div class="border rounded p-3">
-            <div class="fw-semibold">${item.field_name}</div>
+            <div class="fw-semibold">${item.field_label}</div>
             <div>${item.old_value || '—'} → ${item.new_value || '—'}</div>
             <div class="text-body-secondary mt-1">${item.changed_by} · ${new Date(item.created_at).toLocaleString('et-EE')}</div>
           </div>

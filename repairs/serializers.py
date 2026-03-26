@@ -74,7 +74,17 @@ class RepairCommentSerializer(serializers.ModelSerializer):
 
 class RepairStatusLogSerializer(serializers.ModelSerializer):
     changed_by = serializers.StringRelatedField()
+    field_label = serializers.SerializerMethodField()
 
     class Meta:
         model = RepairStatusLog
-        fields = ['id', 'field_name', 'old_value', 'new_value', 'changed_by', 'created_at']
+        fields = ['id', 'field_name', 'field_label', 'old_value', 'new_value', 'changed_by', 'created_at']
+
+    def get_field_label(self, obj):
+        mapping = {
+            'repair_created': 'Parandus loodud',
+            'status': 'Staatus',
+            'priority': 'Prioriteet',
+            'assigned_to': 'Parandaja',
+        }
+        return mapping.get(obj.field_name, obj.field_name)
