@@ -22,9 +22,11 @@ class Command(BaseCommand):
         }
 
         admin_user, _ = User.objects.get_or_create(username='admin', defaults={'email': 'admin@example.com', 'is_staff': True, 'is_superuser': True})
-        if not admin_user.has_usable_password():
-            admin_user.set_password('admin12345')
-            admin_user.save()
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.email = admin_user.email or 'admin@example.com'
+        admin_user.set_password('admin12345')
+        admin_user.save()
 
         master, _ = User.objects.get_or_create(username='mart', defaults={'first_name': 'Mart', 'email': 'mart@example.com'})
         master.set_password('demo12345')
