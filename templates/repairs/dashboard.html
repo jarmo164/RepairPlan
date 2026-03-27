@@ -33,7 +33,7 @@
           </div>
           <div class="table-responsive">
             <table class="table table-sm mb-0" id="high-priority-table">
-              <thead><tr><th>ID</th><th>Tootekood</th><th>Staatus</th></tr></thead>
+              <thead><tr><th>ID</th><th>Tootekood</th><th>Kogus</th><th>Staatus</th></tr></thead>
               <tbody><tr><td colspan="3" class="text-center text-body-secondary py-3">Laen…</td></tr></tbody>
             </table>
           </div>
@@ -45,7 +45,7 @@
           </div>
           <div class="table-responsive">
             <table class="table table-sm mb-0" id="unassigned-table">
-              <thead><tr><th>ID</th><th>Tootekood</th><th>Osakond</th></tr></thead>
+              <thead><tr><th>ID</th><th>Tootekood</th><th>Kogus</th><th>Osakond</th></tr></thead>
               <tbody><tr><td colspan="3" class="text-center text-body-secondary py-3">Laen…</td></tr></tbody>
             </table>
           </div>
@@ -101,6 +101,7 @@
                   <th>ID</th>
                   <th>Tootekood</th>
                   <th>Osakond</th>
+                  <th>Kogus</th>
                   <th>Staatus</th>
                   <th>Prioriteet</th>
                   <th>Määratud</th>
@@ -130,27 +131,30 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    renderRows('#high-priority-table tbody', summary.high_priority_open || [], 3, (repair) => `
+    renderRows('#high-priority-table tbody', summary.high_priority_open || [], 4, (repair) => `
       <tr>
         <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
         <td>${repair.product_code}</td>
+        <td>${repair.quantity}</td>
         <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
       </tr>
     `);
 
-    renderRows('#unassigned-table tbody', summary.unassigned_open || [], 3, (repair) => `
+    renderRows('#unassigned-table tbody', summary.unassigned_open || [], 4, (repair) => `
       <tr>
         <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
         <td>${repair.product_code}</td>
+        <td>${repair.quantity}</td>
         <td>${repair.department}</td>
       </tr>
     `);
 
-    renderRows('#repairs-table tbody', summary.oldest_open || [], 6, (repair) => `
+    renderRows('#repairs-table tbody', summary.oldest_open || [], 7, (repair) => `
       <tr>
         <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
         <td>${repair.product_code}</td>
         <td>${repair.department ?? '—'}</td>
+        <td>${repair.quantity}</td>
         <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
         <td>${RepairPlanUi.priorityBadge(repair.priority_label)}</td>
         <td>${repair.assigned_to ?? '—'}</td>
@@ -174,9 +178,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     renderRows('#repairer-workload-table tbody', summary.by_repairer || [], 2, (item) => `<tr><td>${item.username}</td><td>${item.total}</td></tr>`);
   } catch (error) {
-    document.querySelector('#repairs-table tbody').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${error.message}</td></tr>`;
-    document.querySelector('#high-priority-table tbody').innerHTML = `<tr><td colspan="3" class="text-center text-danger py-4">${error.message}</td></tr>`;
-    document.querySelector('#unassigned-table tbody').innerHTML = `<tr><td colspan="3" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    document.querySelector('#repairs-table tbody').innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    document.querySelector('#high-priority-table tbody').innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    document.querySelector('#unassigned-table tbody').innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${error.message}</td></tr>`;
     document.querySelector('#repairer-workload-table tbody').innerHTML = `<tr><td colspan="2" class="text-center text-danger py-4">${error.message}</td></tr>`;
   }
 });

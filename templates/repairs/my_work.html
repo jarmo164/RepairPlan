@@ -59,6 +59,7 @@
         <tr>
           <th>ID</th>
           <th>Töö</th>
+          <th>Kogus</th>
           <th>Staatus</th>
           <th>Järgmine tegevus</th>
           <th>Kommentaar</th>
@@ -176,7 +177,7 @@
       const data = await RepairPlanApi.get('/api/repairs/my-work/');
       tbody.innerHTML = '';
       if (!data.results.length) {
-        tbody.innerHTML = RepairPlanUi.emptyState('Sulle ei ole praegu töid määratud.', 6);
+        tbody.innerHTML = RepairPlanUi.emptyState('Sulle ei ole praegu töid määratud.', 7);
         return;
       }
       const fragment = document.createDocumentFragment();
@@ -189,6 +190,7 @@
             <div class="fw-semibold">${repair.product_code}</div>
             <div class="small text-body-secondary">${repair.client_or_group}</div>
           </td>
+          <td><span class="fw-semibold">${repair.quantity}</span></td>
           <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
           <td><span class="small text-body-secondary">${suggestionLabel(repair.status)}</span></td>
           <td></td>
@@ -200,7 +202,7 @@
       });
       tbody.appendChild(fragment);
     } catch (error) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${error.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${error.message}</td></tr>`;
       showFeedback(error.message, 'danger');
     }
   }

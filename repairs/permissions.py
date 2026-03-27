@@ -79,7 +79,7 @@ def can_assign_repairs(user) -> bool:
 
 
 def can_change_priority(user) -> bool:
-    return is_administrator(user) or is_repair_master(user)
+    return is_administrator(user) or is_repair_master(user) or is_department_manager(user)
 
 
 def can_change_status(user, *, own_assigned_only: bool = False) -> bool:

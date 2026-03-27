@@ -34,8 +34,8 @@
   <div class="col-sm-6 col-lg-3">
     <div class="card section-card h-100">
       <div class="card-body">
-        <div class="small text-body-secondary mb-1">Osakond</div>
-        <div class="fw-semibold">{{ repair.department }}</div>
+        <div class="small text-body-secondary mb-1">Kogus</div>
+        <div class="fw-semibold">{{ repair.quantity }}</div>
       </div>
     </div>
   </div>
@@ -58,6 +58,7 @@
       <div class="card-body">
         <dl class="row mb-0 detail-meta-list">
           <dt class="col-sm-5">Tootekood</dt><dd class="col-sm-7 fw-semibold">{{ repair.product_code }}</dd>
+          <dt class="col-sm-5">Osakond</dt><dd class="col-sm-7">{{ repair.department }}</dd>
           <dt class="col-sm-5">Kogus</dt><dd class="col-sm-7">{{ repair.quantity }}</dd>
           <dt class="col-sm-5">Klient / grupp</dt><dd class="col-sm-7">{{ repair.client_or_group }}</dd>
           <dt class="col-sm-5">Loodud</dt><dd class="col-sm-7">{{ repair.created_at|date:"d.m.Y H:i" }}</dd>

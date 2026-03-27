@@ -12,6 +12,7 @@ class RepairFormTests(TestCase):
             'quantity': 3,
             'client_or_group': 'Testgrupp',
             'department': department.id,
+            'priority': 'MEDIUM',
             'comment': 'Algne märkus',
         })
         self.assertTrue(form.is_valid())

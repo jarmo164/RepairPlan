@@ -29,6 +29,7 @@ class RepairCreateForm(StyledModelForm):
             'quantity',
             'client_or_group',
             'department',
+            'priority',
             'comment',
         ]
         widgets = {
