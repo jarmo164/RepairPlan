@@ -3,8 +3,9 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <div><h1 class="h3 page-header__title">Parandus #{{ repair.id }}</h1>
-    <p class="page-header__subtitle">Põhiandmed tulevad serverist, kommentaarid ja ajalugu API kaudu.</p></div>
+    <h1 class="h3 page-header__title">Parandus #{{ repair.id }}</h1>
+    <p class="page-header__subtitle">Ülevaade, tegevused ja ajalugu ühes juhtvaates.</p>
+  </div>
   <div class="page-header__actions">
     <a class="btn btn-outline-secondary" href="{% url 'repairs:repair-list' %}">Tagasi nimekirja</a>
     {% if action_flags.can_edit %}
@@ -13,26 +14,104 @@
   </div>
 </div>
 
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="card section-card h-100">
+      <div class="card-body">
+        <div class="small text-body-secondary mb-1">Staatus</div>
+        <div id="repair-status-badge">{{ repair.get_status_display }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card section-card h-100">
+      <div class="card-body">
+        <div class="small text-body-secondary mb-1">Prioriteet</div>
+        <div id="repair-priority-badge">{{ repair.get_priority_display }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card section-card h-100">
+      <div class="card-body">
+        <div class="small text-body-secondary mb-1">Osakond</div>
+        <div class="fw-semibold">{{ repair.department }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="card section-card h-100">
+      <div class="card-body">
+        <div class="small text-body-secondary mb-1">Parandaja</div>
+        <div class="fw-semibold" id="repair-assignee-value">{{ repair.assigned_to|default:'Määramata' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="detail-feedback" class="mb-3"></div>
 
 <div class="row g-4">
-  <div class="col-lg-8">
+  <div class="col-lg-5">
     <div class="card mb-4 section-card">
-      <div class="card-header">Põhiandmed</div>
+      <div class="card-header">Ülevaade</div>
       <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-sm-4">Tootekood</dt><dd class="col-sm-8">{{ repair.product_code }}</dd>
-          <dt class="col-sm-4">Kogus</dt><dd class="col-sm-8">{{ repair.quantity }}</dd>
-          <dt class="col-sm-4">Klient / grupp</dt><dd class="col-sm-8">{{ repair.client_or_group }}</dd>
-          <dt class="col-sm-4">Osakond</dt><dd class="col-sm-8">{{ repair.department }}</dd>
-          <dt class="col-sm-4">Staatus</dt><dd class="col-sm-8"><span id="repair-status-badge">{{ repair.get_status_display }}</span></dd>
-          <dt class="col-sm-4">Prioriteet</dt><dd class="col-sm-8"><span id="repair-priority-badge">{{ repair.get_priority_display }}</span></dd>
-          <dt class="col-sm-4">Parandaja</dt><dd class="col-sm-8" id="repair-assignee-value">{{ repair.assigned_to|default:'—' }}</dd>
-          <dt class="col-sm-4">Algkommentaar</dt><dd class="col-sm-8">{{ repair.comment|default:'—' }}</dd>
+        <dl class="row mb-0 detail-meta-list">
+          <dt class="col-sm-5">Tootekood</dt><dd class="col-sm-7 fw-semibold">{{ repair.product_code }}</dd>
+          <dt class="col-sm-5">Kogus</dt><dd class="col-sm-7">{{ repair.quantity }}</dd>
+          <dt class="col-sm-5">Klient / grupp</dt><dd class="col-sm-7">{{ repair.client_or_group }}</dd>
+          <dt class="col-sm-5">Loodud</dt><dd class="col-sm-7">{{ repair.created_at|date:"d.m.Y H:i" }}</dd>
+          <dt class="col-sm-5">Viimati uuendatud</dt><dd class="col-sm-7" id="repair-updated-at">{{ repair.updated_at|date:"d.m.Y H:i" }}</dd>
+          <dt class="col-sm-5">Algkommentaar</dt><dd class="col-sm-7">{{ repair.comment|default:'—' }}</dd>
         </dl>
       </div>
     </div>
 
+    <div class="card mb-4 section-card">
+      <div class="card-header">Järgmine tegevus</div>
+      <div class="card-body vstack gap-3" id="repair-actions-panel">
+        {% if action_flags.can_assign or action_flags.can_change_priority or action_flags.can_change_status %}
+          <div class="small text-body-secondary">Tee siin need muudatused, mida sinu roll selle töö puhul lubab.</div>
+        {% endif %}
+
+        {% if action_flags.can_assign %}
+        <div class="action-block">
+          <label class="form-label small text-body-secondary">Määra või muuda parandajat</label>
+          <div class="input-group input-group-sm">
+            <select class="form-select" id="assign-select"></select>
+            <button class="btn btn-outline-primary" type="button" id="assign-submit">Salvesta</button>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if action_flags.can_change_priority %}
+        <div class="action-block">
+          <label class="form-label small text-body-secondary">Muuda prioriteeti</label>
+          <div class="input-group input-group-sm">
+            <select class="form-select" id="priority-select"></select>
+            <button class="btn btn-outline-primary" type="button" id="priority-submit">Salvesta</button>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if action_flags.can_change_status %}
+        <div class="action-block action-block--primary">
+          <label class="form-label small text-body-secondary">Muuda töö staatust</label>
+          <div class="input-group input-group-sm">
+            <select class="form-select" id="status-select"></select>
+            <button class="btn btn-primary" type="button" id="status-submit">Salvesta staatus</button>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if not action_flags.can_assign and not action_flags.can_change_priority and not action_flags.can_change_status and not action_flags.can_comment %}
+        <div class="text-body-secondary small">Selle kirje jaoks pole sulle täiendavaid tegevusi saadaval.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
     {% if action_flags.can_comment %}
     <div class="card mb-4 section-card">
       <div class="card-header">Lisa kommentaar</div>
@@ -51,57 +130,16 @@
     <div class="card mb-4 section-card">
       <div class="card-header">Kommentaarid</div>
       <div class="card-body">
-        <div id="comments-list" class="vstack gap-3">
+        <div id="comments-list" class="timeline-list vstack gap-3">
           <div class="text-body-secondary">Laen kommentaare…</div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-4">
-    <div class="card mb-4 section-card">
-      <div class="card-header">Lubatud tegevused</div>
-      <div class="card-body vstack gap-3" id="repair-actions-panel">
-        {% if action_flags.can_assign %}
-        <div>
-          <label class="form-label small text-body-secondary">Meistri tegevus: määra parandaja</label>
-          <div class="input-group input-group-sm">
-            <select class="form-select" id="assign-select"></select>
-            <button class="btn btn-outline-primary" type="button" id="assign-submit">Salvesta</button>
-          </div>
-        </div>
-        {% endif %}
-
-        {% if action_flags.can_change_priority %}
-        <div>
-          <label class="form-label small text-body-secondary">Meistri tegevus: muuda prioriteeti</label>
-          <div class="input-group input-group-sm">
-            <select class="form-select" id="priority-select"></select>
-            <button class="btn btn-outline-primary" type="button" id="priority-submit">Salvesta</button>
-          </div>
-        </div>
-        {% endif %}
-
-        {% if action_flags.can_change_status %}
-        <div>
-          <label class="form-label small text-body-secondary">Töö tegevus: muuda staatust</label>
-          <div class="input-group input-group-sm">
-            <select class="form-select" id="status-select"></select>
-            <button class="btn btn-outline-primary" type="button" id="status-submit">Salvesta</button>
-          </div>
-        </div>
-        {% endif %}
-
-        {% if not action_flags.can_assign and not action_flags.can_change_priority and not action_flags.can_change_status and not action_flags.can_comment %}
-        <div class="text-body-secondary small">Selle kirje jaoks pole sulle täiendavaid tegevusi saadaval.</div>
-        {% endif %}
       </div>
     </div>
 
     <div class="card mb-4 section-card">
       <div class="card-header">Tegevusajalugu</div>
       <div class="card-body">
-        <div id="history-list" class="vstack gap-3 small">
+        <div id="history-list" class="timeline-list vstack gap-3 small">
           <div class="text-body-secondary">Laen ajalugu…</div>
         </div>
       </div>
@@ -124,7 +162,7 @@
   const currentAssigneeId = {{ repair.assigned_to_id|default:"null" }};
 
   function showFeedback(message, type = 'success') {
-    feedback.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    feedback.innerHTML = RepairPlanUi.feedback(message, type);
     setTimeout(() => { feedback.innerHTML = ''; }, 3500);
   }
 
@@ -139,31 +177,35 @@
     return options.join('');
   }
 
+  function renderTimelineItem({ title, body, meta }) {
+    return `
+      <div class="timeline-item border rounded p-3">
+        <div class="fw-semibold mb-1">${title}</div>
+        <div>${body}</div>
+        <div class="text-body-secondary mt-2 small">${meta}</div>
+      </div>
+    `;
+  }
+
   async function loadComments() {
     const comments = await RepairPlanApi.get(`/api/repairs/${repairId}/comments/`);
     commentsContainer.innerHTML = comments.results.length
-      ? comments.results.map((item) => `
-          <div class="border rounded p-3">
-            <div class="d-flex justify-content-between small text-body-secondary mb-2">
-              <strong>${item.author}</strong>
-              <span>${new Date(item.created_at).toLocaleString('et-EE')}</span>
-            </div>
-            <div>${item.comment}</div>
-          </div>
-        `).join('')
+      ? comments.results.map((item) => renderTimelineItem({
+          title: item.author,
+          body: item.comment,
+          meta: new Date(item.created_at).toLocaleString('et-EE'),
+        })).join('')
       : '<div class="text-body-secondary">Kommentaare veel pole.</div>';
   }
 
   async function loadHistory() {
     const history = await RepairPlanApi.get(`/api/repairs/${repairId}/history/`);
     historyContainer.innerHTML = history.results.length
-      ? history.results.map((item) => `
-          <div class="border rounded p-3">
-            <div class="fw-semibold">${item.field_label}</div>
-            <div>${item.old_value || '—'} → ${item.new_value || '—'}</div>
-            <div class="text-body-secondary mt-1">${item.changed_by} · ${new Date(item.created_at).toLocaleString('et-EE')}</div>
-          </div>
-        `).join('')
+      ? history.results.map((item) => renderTimelineItem({
+          title: item.field_label,
+          body: `${item.old_value || '—'} → ${item.new_value || '—'}`,
+          meta: `${item.changed_by} · ${new Date(item.created_at).toLocaleString('et-EE')}`,
+        })).join('')
       : '<div class="text-body-secondary">Muutmislugu veel pole.</div>';
   }
 
@@ -171,9 +213,11 @@
     const statusBadge = document.getElementById('repair-status-badge');
     const priorityBadge = document.getElementById('repair-priority-badge');
     const assigneeValue = document.getElementById('repair-assignee-value');
+    const updatedAt = document.getElementById('repair-updated-at');
     if (statusBadge) statusBadge.outerHTML = RepairPlanUi.statusBadge(detail.status_label);
     if (priorityBadge) priorityBadge.outerHTML = RepairPlanUi.priorityBadge(detail.priority_label);
-    if (assigneeValue) assigneeValue.textContent = detail.assigned_to || '—';
+    if (assigneeValue) assigneeValue.textContent = detail.assigned_to || 'Määramata';
+    if (updatedAt) updatedAt.textContent = new Date(detail.updated_at).toLocaleString('et-EE');
   }
 
   function wireActionButtons() {
