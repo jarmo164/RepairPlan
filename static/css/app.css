@@ -115,3 +115,7 @@ body {
   position: relative;
   background: #fff;
 }
+
+#my-work-table .btn-sm {
+  white-space: nowrap;
+}
