@@ -12,6 +12,7 @@ class RepairFormTests(TestCase):
             'quantity': 3,
             'client_or_group': 'Testgrupp',
             'department': department.id,
+            'repair_track': 'GENERAL',
             'priority': 'MEDIUM',
             'comment': 'Algne märkus',
         })

@@ -29,6 +29,7 @@ class RepairCreateForm(StyledModelForm):
             'quantity',
             'client_or_group',
             'department',
+            'repair_track',
             'priority',
             'comment',
         ]
@@ -45,6 +46,7 @@ class RepairUpdateForm(StyledModelForm):
             'quantity',
             'client_or_group',
             'department',
+            'repair_track',
             'priority',
             'status',
             'assigned_to',

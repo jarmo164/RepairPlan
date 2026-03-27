@@ -12,9 +12,9 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'department', 'updated_at')
+    list_display = ('user', 'department', 'specialty', 'updated_at')
     list_select_related = ('user', 'department')
-    list_filter = ('department',)
+    list_filter = ('department', 'specialty')
     search_fields = ('user__username', 'user__first_name', 'user__last_name', 'department__name')
 
 
@@ -32,8 +32,8 @@ class RepairStatusLogInline(admin.TabularInline):
 
 @admin.register(Repair)
 class RepairAdmin(admin.ModelAdmin):
-    list_display = ('id', 'product_code', 'department', 'priority', 'status', 'assigned_to', 'created_at')
-    list_filter = ('status', 'priority', 'department', 'assigned_to')
+    list_display = ('id', 'product_code', 'department', 'repair_track', 'priority', 'status', 'assigned_to', 'created_at')
+    list_filter = ('repair_track', 'status', 'priority', 'department', 'assigned_to')
     search_fields = ('product_code', 'client_or_group', 'comment')
     list_select_related = ('department', 'created_by', 'assigned_to')
     readonly_fields = ('created_at', 'updated_at')

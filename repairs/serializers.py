@@ -15,7 +15,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ['id', 'user', 'department', 'phone', 'notes']
+        fields = ['id', 'user', 'department', 'specialty', 'phone', 'notes']
 
 
 class RepairListSerializer(serializers.ModelSerializer):
@@ -28,7 +28,7 @@ class RepairListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Repair
         fields = [
-            'id', 'product_code', 'quantity', 'client_or_group', 'department', 'created_at',
+            'id', 'product_code', 'quantity', 'client_or_group', 'department', 'repair_track', 'created_at',
             'created_by', 'priority', 'priority_label', 'status', 'status_label', 'assigned_to', 'updated_at',
         ]
 
@@ -43,13 +43,13 @@ class RepairDetailSerializer(RepairListSerializer):
 class RepairCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Repair
-        fields = ['product_code', 'quantity', 'client_or_group', 'department', 'comment']
+        fields = ['product_code', 'quantity', 'client_or_group', 'department', 'repair_track', 'comment']
 
 
 class RepairUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Repair
-        fields = ['product_code', 'quantity', 'client_or_group', 'department', 'priority', 'status', 'assigned_to', 'comment']
+        fields = ['product_code', 'quantity', 'client_or_group', 'department', 'repair_track', 'priority', 'status', 'assigned_to', 'comment']
 
 
 class RepairAssignSerializer(serializers.Serializer):

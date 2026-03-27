@@ -82,6 +82,7 @@ class RepairHtmlViewTests(TestCase):
             'quantity': 2,
             'client_or_group': 'New Client',
             'department': self.department.id,
+            'repair_track': 'GENERAL',
             'priority': 'HIGH',
             'comment': 'uus',
         })

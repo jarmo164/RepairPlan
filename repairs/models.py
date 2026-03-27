@@ -16,8 +16,13 @@ class Department(models.Model):
 
 
 class UserProfile(models.Model):
+    class Specialty(models.TextChoices):
+        GENERAL = 'GENERAL', 'Üldparandaja'
+        ELECTRONICS = 'ELECTRONICS', 'Elektrooniline parandaja'
+
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='users')
+    specialty = models.CharField(max_length=20, choices=Specialty.choices, default=Specialty.GENERAL)
     phone = models.CharField(max_length=50, blank=True)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -31,6 +36,10 @@ class UserProfile(models.Model):
 
 
 class Repair(models.Model):
+    class Track(models.TextChoices):
+        GENERAL = 'GENERAL', 'Üldine'
+        ELECTRONICS = 'ELECTRONICS', 'Elektrooniline'
+
     class Priority(models.TextChoices):
         HIGH = 'HIGH', 'Kõrge'
         MEDIUM = 'MEDIUM', 'Keskmine'
@@ -48,6 +57,7 @@ class Repair(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     client_or_group = models.CharField(max_length=255)
     department = models.ForeignKey(Department, on_delete=models.PROTECT, related_name='repairs')
+    repair_track = models.CharField(max_length=20, choices=Track.choices, default=Track.GENERAL)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='created_repairs')
     priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.MEDIUM)

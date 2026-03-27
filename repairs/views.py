@@ -170,7 +170,11 @@ class RepairCreateView(LoginRequiredMixin, View):
         if not can_create_repairs(request.user):
             messages.error(request, 'Sul puudub õigus parandusi luua.')
             return redirect('repairs:repair-list')
-        form = restrict_repair_form_for_user(RepairCreateForm(request.POST), request.user)
+        post_data = request.POST.copy()
+        user_department = getattr(getattr(request.user, 'profile', None), 'department', None)
+        if is_department_manager(request.user) and user_department:
+            post_data['department'] = str(user_department.pk)
+        form = restrict_repair_form_for_user(RepairCreateForm(post_data), request.user)
         if form.is_valid():
             try:
                 repair = create_repair(created_by=request.user, **form.cleaned_data)
@@ -229,7 +233,11 @@ class RepairUpdateView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
         repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
-        form = restrict_repair_form_for_user(RepairUpdateForm(request.POST, instance=repair), request.user, repair=repair)
+        post_data = request.POST.copy()
+        user_department = getattr(getattr(request.user, 'profile', None), 'department', None)
+        if is_department_manager(request.user) and user_department:
+            post_data['department'] = str(user_department.pk)
+        form = restrict_repair_form_for_user(RepairUpdateForm(post_data, instance=repair), request.user, repair=repair)
         if form.is_valid():
             try:
                 update_repair(repair=repair, changed_by=request.user, **form.cleaned_data)
