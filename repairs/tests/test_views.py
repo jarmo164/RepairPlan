@@ -68,3 +68,25 @@ class RepairHtmlViewTests(TestCase):
         response = self.client.get(reverse('repairs:dashboard'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'repairs/dashboard.html')
+
+    def test_department_manager_create_form_locks_department(self):
+        self.client.login(username='manager', password='secret123')
+        response = self.client.get(reverse('repairs:repair-create'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="%s"' % self.department.id)
+
+    def test_department_manager_can_create_visible_repair(self):
+        self.client.login(username='manager', password='secret123')
+        response = self.client.post(reverse('repairs:repair-create'), {
+            'product_code': 'NEW-1',
+            'quantity': 2,
+            'client_or_group': 'New Client',
+            'department': self.department.id,
+            'priority': 'HIGH',
+            'comment': 'uus',
+        })
+        self.assertEqual(response.status_code, 302)
+        created = Repair.objects.get(product_code='NEW-1')
+        self.assertEqual(created.department, self.department)
+        follow = self.client.get(reverse('repairs:repair-detail', args=[created.id]))
+        self.assertEqual(follow.status_code, 200)

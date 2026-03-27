@@ -52,6 +52,20 @@ from .serializers import (
 from .services import add_comment, assign_repair, change_priority, change_status, create_repair, update_repair
 
 
+def restrict_repair_form_for_user(form, user, repair=None):
+    profile = getattr(user, 'profile', None)
+    user_department = getattr(profile, 'department', None)
+
+    if is_department_manager(user) and user_department:
+        form.fields['department'].queryset = Department.objects.filter(pk=user_department.pk)
+        form.fields['department'].initial = user_department
+        if repair is None:
+            form.fields['department'].disabled = True
+        else:
+            form.fields['department'].disabled = True
+    return form
+
+
 def build_navigation_context(user):
     is_dept_manager = is_department_manager(user)
     is_master = is_repair_master(user)
@@ -149,13 +163,14 @@ class RepairCreateView(LoginRequiredMixin, View):
         if not can_create_repairs(request.user):
             messages.error(request, 'Sul puudub õigus parandusi luua.')
             return redirect('repairs:repair-list')
-        return render(request, self.template_name, {'form': RepairCreateForm(), 'page_title': 'Uus parandus', 'mode': 'create', 'nav_key': 'repair-create', **build_navigation_context(request.user)})
+        form = restrict_repair_form_for_user(RepairCreateForm(), request.user)
+        return render(request, self.template_name, {'form': form, 'page_title': 'Uus parandus', 'mode': 'create', 'nav_key': 'repair-create', **build_navigation_context(request.user)})
 
     def post(self, request):
         if not can_create_repairs(request.user):
             messages.error(request, 'Sul puudub õigus parandusi luua.')
             return redirect('repairs:repair-list')
-        form = RepairCreateForm(request.POST)
+        form = restrict_repair_form_for_user(RepairCreateForm(request.POST), request.user)
         if form.is_valid():
             try:
                 repair = create_repair(created_by=request.user, **form.cleaned_data)
@@ -198,6 +213,7 @@ class RepairUpdateView(LoginRequiredMixin, View):
 
     def get_form(self, request, repair):
         form = RepairUpdateForm(instance=repair)
+        form = restrict_repair_form_for_user(form, request.user, repair=repair)
         if not can_assign_repairs(request.user):
             form.fields['assigned_to'].disabled = True
         if not can_change_priority(request.user):
@@ -213,7 +229,7 @@ class RepairUpdateView(LoginRequiredMixin, View):
 
     def post(self, request, pk):
         repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
-        form = RepairUpdateForm(request.POST, instance=repair)
+        form = restrict_repair_form_for_user(RepairUpdateForm(request.POST, instance=repair), request.user, repair=repair)
         if form.is_valid():
             try:
                 update_repair(repair=repair, changed_by=request.user, **form.cleaned_data)
