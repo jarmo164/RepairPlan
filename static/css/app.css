@@ -119,3 +119,19 @@ body {
 #my-work-table .btn-sm {
   white-space: nowrap;
 }
+
+.role-banner.role-manager {
+  border-left: 4px solid #0d6efd;
+}
+
+.role-banner.role-repairer {
+  border-left: 4px solid #198754;
+}
+
+.role-banner.role-master {
+  border-left: 4px solid #fd7e14;
+}
+
+.role-banner.role-admin {
+  border-left: 4px solid #6f42c1;
+}

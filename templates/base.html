@@ -11,7 +11,7 @@
     <link href="{% static 'css/app.css' %}" rel="stylesheet">
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="{{ role_theme|default:'role-generic' }}">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="{% url 'repairs:home' %}"><i class="bi bi-tools me-2"></i>RepairPlan</a>
@@ -28,6 +28,9 @@
                     <li class="nav-item"><a class="nav-link {% if nav_key == 'my-work' %}active{% endif %}" href="{% url 'repairs:my-work' %}">Minu tööd</a></li>
                     {% if is_repair_master or is_administrator %}
                         <li class="nav-item"><a class="nav-link {% if nav_key == 'dashboard' %}active{% endif %}" href="{% url 'repairs:dashboard' %}">Dashboard</a></li>
+                    {% endif %}
+                    {% if show_admin_link %}
+                        <li class="nav-item"><a class="nav-link" href="/admin/">Admin</a></li>
                     {% endif %}
                 {% endif %}
             </ul>
@@ -53,6 +56,31 @@
 
 <main class="container py-4">
     {% if user.is_authenticated %}
+    <div class="role-banner card section-card mb-4 {{ role_theme }}">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <div class="small text-body-secondary mb-1">Sinu roll</div>
+                <div class="fw-semibold fs-5">{{ role_label }}</div>
+                <div class="text-body-secondary">{{ role_intro }}</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                {% if is_department_manager %}
+                    <a class="btn btn-primary" href="{% url 'repairs:repair-create' %}">Lisa parandus</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'repairs:repair-list' %}">Vaata osakonna töid</a>
+                {% elif is_repairer %}
+                    <a class="btn btn-primary" href="{% url 'repairs:my-work' %}">Ava minu töölaud</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'repairs:repair-list' %}">Kõik nähtavad tööd</a>
+                {% elif is_repair_master %}
+                    <a class="btn btn-primary" href="{% url 'repairs:dashboard' %}">Ava juhtimisvaade</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'repairs:repair-list' %}">Halda töid</a>
+                {% elif is_administrator %}
+                    <a class="btn btn-primary" href="/admin/">Ava admin</a>
+                    <a class="btn btn-outline-secondary" href="{% url 'repairs:dashboard' %}">Ava dashboard</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <div class="row g-3 mb-4">
         {% if can_create_repairs %}
         <div class="col-sm-6 col-lg-3">

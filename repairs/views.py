@@ -53,12 +53,41 @@ from .services import add_comment, assign_repair, change_priority, change_status
 
 
 def build_navigation_context(user):
+    is_dept_manager = is_department_manager(user)
+    is_master = is_repair_master(user)
+    is_rep = is_repairer(user)
+    is_admin = is_administrator(user)
+    if is_admin:
+        role_label = 'Administraator'
+        role_intro = 'Halda süsteemi, vaata koormust ja kasuta admin-paneeli.'
+        role_theme = 'role-admin'
+    elif is_master:
+        role_label = 'Paranduse meister'
+        role_intro = 'Juhi tööde jaotust, prioriteete ja tööseisu.'
+        role_theme = 'role-master'
+    elif is_rep:
+        role_label = 'Parandaja'
+        role_intro = 'Keskendu oma tööjärjekorrale ja järgmisele tegevusele.'
+        role_theme = 'role-repairer'
+    elif is_dept_manager:
+        role_label = 'Osakonna juht'
+        role_intro = 'Lisa uusi parandusi ja jälgi oma osakonna kirjeid.'
+        role_theme = 'role-manager'
+    else:
+        role_label = 'Kasutaja'
+        role_intro = 'Kasuta süsteemi vastavalt oma õigustele.'
+        role_theme = 'role-generic'
+
     return {
-        'is_department_manager': is_department_manager(user),
-        'is_repair_master': is_repair_master(user),
-        'is_repairer': is_repairer(user),
-        'is_administrator': is_administrator(user),
+        'is_department_manager': is_dept_manager,
+        'is_repair_master': is_master,
+        'is_repairer': is_rep,
+        'is_administrator': is_admin,
         'can_create_repairs': can_create_repairs(user),
+        'role_label': role_label,
+        'role_intro': role_intro,
+        'role_theme': role_theme,
+        'show_admin_link': is_admin or getattr(user, 'is_superuser', False),
     }
 
 
