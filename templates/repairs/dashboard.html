@@ -34,7 +34,7 @@
           <div class="table-responsive">
             <table class="table table-sm mb-0" id="high-priority-table">
               <thead><tr><th>ID</th><th>Tootekood</th><th>Kogus</th><th>Rada</th><th>Staatus</th></tr></thead>
-              <tbody><tr><td colspan="3" class="text-center text-body-secondary py-3">Laen…</td></tr></tbody>
+              <tbody><tr><td colspan="5" class="text-center text-body-secondary py-3">Laen…</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -46,7 +46,7 @@
           <div class="table-responsive">
             <table class="table table-sm mb-0" id="unassigned-table">
               <thead><tr><th>ID</th><th>Tootekood</th><th>Kogus</th><th>Rada</th><th>Osakond</th></tr></thead>
-              <tbody><tr><td colspan="3" class="text-center text-body-secondary py-3">Laen…</td></tr></tbody>
+              <tbody><tr><td colspan="5" class="text-center text-body-secondary py-3">Laen…</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -89,6 +89,37 @@
   </div>
 </div>
 
+<div class="row g-4 mt-1">
+  <div class="col-lg-6">
+    <div class="card section-card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Ise võetud tööd</span>
+        <span class="small text-body-secondary">Parandajad võtsid töö ise riiulist.</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0" id="self-claimed-table">
+          <thead><tr><th>ID</th><th>Tootekood</th><th>Parandaja</th><th>Staatus</th></tr></thead>
+          <tbody><tr><td colspan="4" class="text-center text-body-secondary py-3">Laen…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card section-card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Nädalavahetusel ise võetud tööd</span>
+        <span class="small text-body-secondary">Kiire esmaspäevane ülevaade.</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0" id="weekend-self-claimed-table">
+          <thead><tr><th>ID</th><th>Tootekood</th><th>Parandaja</th><th>Staatus</th></tr></thead>
+          <tbody><tr><td colspan="4" class="text-center text-body-secondary py-3">Laen…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="card section-card mt-4">
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
       <span>Vanimad avatud tööd</span>
@@ -109,7 +140,7 @@
               </tr>
           </thead>
           <tbody>
-              <tr><td colspan="6" class="text-center text-body-secondary py-4">Laen andmeid…</td></tr>
+              <tr><td colspan="8" class="text-center text-body-secondary py-4">Laen andmeid…</td></tr>
           </tbody>
       </table>
   </div>
@@ -152,6 +183,24 @@ document.addEventListener('DOMContentLoaded', async () => {
       </tr>
     `);
 
+    renderRows('#self-claimed-table tbody', summary.self_claimed || [], 4, (repair) => `
+      <tr class="${repair.repair_track === 'ELECTRONICS' ? 'repair-row--electronics' : ''}">
+        <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
+        <td>${repair.product_code}</td>
+        <td>${RepairPlanUi.assigneeLabel(repair.assigned_to, repair.assigned_to_specialty)}</td>
+        <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
+      </tr>
+    `);
+
+    renderRows('#weekend-self-claimed-table tbody', summary.weekend_self_claimed || [], 4, (repair) => `
+      <tr class="${repair.repair_track === 'ELECTRONICS' ? 'repair-row--electronics' : ''}">
+        <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
+        <td>${repair.product_code}</td>
+        <td>${RepairPlanUi.assigneeLabel(repair.assigned_to, repair.assigned_to_specialty)}</td>
+        <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
+      </tr>
+    `);
+
     renderRows('#repairs-table tbody', summary.oldest_open || [], 8, (repair) => `
       <tr class="${repair.repair_track === 'ELECTRONICS' ? 'repair-row--electronics' : ''}">
         <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
@@ -185,6 +234,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelector('#repairs-table tbody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">${error.message}</td></tr>`;
     document.querySelector('#high-priority-table tbody').innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${error.message}</td></tr>`;
     document.querySelector('#unassigned-table tbody').innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    document.querySelector('#self-claimed-table tbody').innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${error.message}</td></tr>`;
+    document.querySelector('#weekend-self-claimed-table tbody').innerHTML = `<tr><td colspan="4" class="text-center text-danger py-4">${error.message}</td></tr>`;
     document.querySelector('#repairer-workload-table tbody').innerHTML = `<tr><td colspan="2" class="text-center text-danger py-4">${error.message}</td></tr>`;
   }
 });

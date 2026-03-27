@@ -133,3 +133,25 @@ def repair_shelf_for(user):
         qs = qs.filter(repair_track=Repair.Track.ELECTRONICS)
 
     return qs.order_by('priority', 'created_at')
+
+
+def dashboard_self_claimed_repairs_for(user, limit=10):
+    return (
+        repairs_visible_to(user)
+        .filter(status_logs__field_name='assignment_source', status_logs__new_value='SELF_CLAIMED')
+        .distinct()
+        .order_by('-updated_at')[:limit]
+    )
+
+
+def dashboard_weekend_self_claimed_repairs_for(user, limit=10):
+    return (
+        repairs_visible_to(user)
+        .filter(
+            status_logs__field_name='assignment_source',
+            status_logs__new_value='SELF_CLAIMED',
+            status_logs__created_at__week_day__in=[1, 7],
+        )
+        .distinct()
+        .order_by('-updated_at')[:limit]
+    )
