@@ -21,13 +21,13 @@
         <div class="collapse navbar-collapse" id="mainNav">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'repairs:repair-list' %}">Parandused</a></li>
+                    <li class="nav-item"><a class="nav-link {% if nav_key == 'repair-list' %}active{% endif %}" href="{% url 'repairs:repair-list' %}">Parandused</a></li>
                     {% if can_create_repairs %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'repairs:repair-create' %}">Uus parandus</a></li>
+                        <li class="nav-item"><a class="nav-link {% if nav_key == 'repair-create' %}active{% endif %}" href="{% url 'repairs:repair-create' %}">Uus parandus</a></li>
                     {% endif %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'repairs:my-work' %}">Minu tööd</a></li>
+                    <li class="nav-item"><a class="nav-link {% if nav_key == 'my-work' %}active{% endif %}" href="{% url 'repairs:my-work' %}">Minu tööd</a></li>
                     {% if is_repair_master or is_administrator %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'repairs:dashboard' %}">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link {% if nav_key == 'dashboard' %}active{% endif %}" href="{% url 'repairs:dashboard' %}">Dashboard</a></li>
                     {% endif %}
                 {% endif %}
             </ul>
@@ -56,7 +56,7 @@
     <div class="row g-3 mb-4">
         {% if can_create_repairs %}
         <div class="col-sm-6 col-lg-3">
-            <a class="card text-decoration-none shadow-sm h-100 quick-link-card" href="{% url 'repairs:repair-create' %}">
+            <a class="card text-decoration-none h-100 quick-link-card section-card" href="{% url 'repairs:repair-create' %}">
                 <div class="card-body">
                     <div class="small text-body-secondary mb-1">Kiirtegevus</div>
                     <div class="fw-semibold">Lisa uus parandus</div>
@@ -65,7 +65,7 @@
         </div>
         {% endif %}
         <div class="col-sm-6 col-lg-3">
-            <a class="card text-decoration-none shadow-sm h-100 quick-link-card" href="{% url 'repairs:repair-list' %}">
+            <a class="card text-decoration-none h-100 quick-link-card section-card" href="{% url 'repairs:repair-list' %}">
                 <div class="card-body">
                     <div class="small text-body-secondary mb-1">Töölaud</div>
                     <div class="fw-semibold">Ava paranduste nimekiri</div>
@@ -73,7 +73,7 @@
             </a>
         </div>
         <div class="col-sm-6 col-lg-3">
-            <a class="card text-decoration-none shadow-sm h-100 quick-link-card" href="{% url 'repairs:my-work' %}">
+            <a class="card text-decoration-none h-100 quick-link-card section-card" href="{% url 'repairs:my-work' %}">
                 <div class="card-body">
                     <div class="small text-body-secondary mb-1">Töölaud</div>
                     <div class="fw-semibold">Vaata minu töid</div>
@@ -82,7 +82,7 @@
         </div>
         {% if is_repair_master or is_administrator %}
         <div class="col-sm-6 col-lg-3">
-            <a class="card text-decoration-none shadow-sm h-100 quick-link-card" href="{% url 'repairs:dashboard' %}">
+            <a class="card text-decoration-none h-100 quick-link-card section-card" href="{% url 'repairs:dashboard' %}">
                 <div class="card-body">
                     <div class="small text-body-secondary mb-1">Ülevaade</div>
                     <div class="fw-semibold">Ava dashboard</div>
@@ -96,7 +96,7 @@
     {% if messages %}
         <div class="mb-3" id="messages-area">
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags|default:'info' }} mb-2">{{ message }}</div>
+                <div class="alert alert-{{ message.tags|default:'info' }} shadow-sm mb-2">{{ message }}</div>
             {% endfor %}
         </div>
     {% else %}

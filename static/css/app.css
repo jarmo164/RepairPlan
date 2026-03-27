@@ -29,3 +29,41 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 .5rem 1rem rgba(0,0,0,.08);
 }
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.page-header__title {
+  margin-bottom: 0.25rem;
+}
+
+.page-header__subtitle {
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.page-header__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.section-card {
+  box-shadow: 0 .125rem .25rem rgba(0,0,0,.04);
+  border: 1px solid rgba(0,0,0,.06);
+}
+
+.navbar .nav-link.active {
+  font-weight: 600;
+  color: #fff !important;
+}
+
+.badge.text-bg-warning {
+  color: #1f2328 !important;
+}

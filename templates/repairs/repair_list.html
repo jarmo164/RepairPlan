@@ -1,17 +1,19 @@
 {% extends 'base.html' %}
 {% block title %}Parandused · RepairPlan{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+<div class="page-header">
   <div>
-    <h1 class="h3 mb-1">Parandused</h1>
-    <p class="text-body-secondary mb-0">Filtreeritav nimekiri, mille read laetakse API kaudu.</p>
+    <div><h1 class="h3 page-header__title">Parandused</h1>
+    <p class="page-header__subtitle">Filtreeritav nimekiri, mille read laetakse API kaudu.</p></div>
+  <div class="page-header__actions">
+    <a class="btn btn-primary" href="{% url 'repairs:repair-create' %}">Lisa parandus</a>
+    <button class="btn btn-outline-secondary" type="button" id="reset-filters-btn">Lähtesta filtrid</button>
   </div>
-  <a class="btn btn-primary" href="{% url 'repairs:repair-create' %}">Lisa parandus</a>
 </div>
 
 <div id="repairs-feedback" class="mb-3"></div>
 
-<div class="card mb-4 shadow-sm">
+<div class="card mb-4 section-card">
   <div class="card-body">
     <form id="repairs-filter-form" class="row g-3">
       <div class="col-md-4">
@@ -55,7 +57,7 @@
   </div>
 </div>
 
-<div class="card shadow-sm">
+<div class="card section-card">
   <div class="table-responsive">
     <table class="table mb-0" id="repairs-list-table">
       <thead>
@@ -95,6 +97,7 @@
   const exportLink = document.getElementById('export-repairs-link');
   const feedback = document.getElementById('repairs-feedback');
   let currentPage = 1;
+  const resetBtn = document.getElementById('reset-filters-btn');
 
   function showFeedback(message, type = 'success') {
     feedback.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
