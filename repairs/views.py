@@ -36,6 +36,7 @@ from .selectors import (
     repair_list_summary_for,
     filter_repairs_for_user,
     my_work_for,
+    repair_shelf_for,
     repairs_visible_to,
 )
 from .serializers import (
@@ -50,7 +51,7 @@ from .serializers import (
     RepairStatusLogSerializer,
     RepairUpdateSerializer,
 )
-from .services import add_comment, assign_repair, change_priority, change_status, create_repair, update_repair
+from .services import add_comment, assign_repair, change_priority, change_status, create_repair, self_claim_repair, update_repair
 
 
 def restrict_repair_form_for_user(form, user, repair=None):
@@ -138,6 +139,24 @@ class RepairListView(LoginRequiredMixin, View):
             **build_navigation_context(request.user),
         }
         return render(request, self.template_name, context)
+
+
+class RepairShelfView(LoginRequiredMixin, View):
+    template_name = 'repairs/repair_shelf.html'
+
+    def get(self, request):
+        shelf_items = list(repair_shelf_for(request.user))
+        shelf_summary = {
+            'total': len(shelf_items),
+            'electronics': sum(1 for item in shelf_items if item.repair_track == Repair.Track.ELECTRONICS),
+            'high_priority': sum(1 for item in shelf_items if item.priority == Repair.Priority.HIGH),
+        }
+        return render(request, self.template_name, {
+            'page_title': 'Tööde riiul',
+            'shelf_summary': shelf_summary,
+            'nav_key': 'repair-shelf',
+            **build_navigation_context(request.user),
+        })
 
 
 class MyWorkView(LoginRequiredMixin, View):
@@ -300,6 +319,26 @@ class RepairsApiView(APIView):
         except ValidationError as exc:
             return Response({'detail': exc.message}, status=status.HTTP_403_FORBIDDEN)
         return Response(RepairDetailSerializer(repair).data, status=status.HTTP_201_CREATED)
+
+
+class RepairShelfApiView(APIView):
+    permission_classes = [RepairApiPermission]
+
+    def get(self, request):
+        serializer = RepairListSerializer(repair_shelf_for(request.user), many=True)
+        return Response({'results': serializer.data})
+
+
+class RepairSelfClaimApiView(APIView):
+    permission_classes = [RepairApiPermission]
+
+    def post(self, request, pk):
+        repair = get_object_or_404(repair_shelf_for(request.user), pk=pk)
+        try:
+            repair = self_claim_repair(repair=repair, claimed_by=request.user)
+        except ValidationError as exc:
+            return Response({'detail': exc.message}, status=status.HTTP_403_FORBIDDEN)
+        return Response(RepairDetailSerializer(repair).data)
 
 
 class MyWorkApiView(APIView):

@@ -129,3 +129,16 @@ def add_comment(*, repair, author, comment):
     if not cleaned:
         raise ValidationError('Kommentaar ei tohi olla tühi.')
     return RepairComment.objects.create(repair=repair, author=author, comment=cleaned)
+
+
+def self_claim_repair(*, repair, claimed_by):
+    if not claimed_by or not claimed_by.is_authenticated:
+        raise ValidationError('Autentimine puudub.')
+    if repair.assigned_to_id:
+        raise ValidationError('See töö on juba kellelegi määratud.')
+    repair.assigned_to = claimed_by
+    repair.save(update_fields=['assigned_to', 'updated_at'])
+    log_change(repair=repair, changed_by=claimed_by, field_name='assigned_to', old_value='', new_value=claimed_by.pk)
+    log_change(repair=repair, changed_by=claimed_by, field_name='assignment_source', old_value='', new_value='SELF_CLAIMED')
+    send_assignment_notification(repair=repair, assigned_to=claimed_by, changed_by=claimed_by)
+    return repair

@@ -118,3 +118,18 @@ def repair_list_summary_for(user):
         'unassigned': qs.filter(assigned_to__isnull=True).count(),
         'in_progress': qs.filter(status=Repair.Status.IN_PROGRESS).count(),
     }
+
+
+def repair_shelf_for(user):
+    qs = Repair.objects.select_related('department', 'created_by', 'assigned_to').filter(assigned_to__isnull=True)
+    qs = qs.exclude(status__in=[Repair.Status.COMPLETED, Repair.Status.RETURNED])
+
+    if not user or not user.is_authenticated:
+        return qs.none()
+    if is_department_manager(user):
+        department = getattr(getattr(user, 'profile', None), 'department', None)
+        qs = qs.filter(department=department) if department else qs.none()
+    elif is_repairer(user) and hasattr(user, 'profile') and user.profile.specialty == 'ELECTRONICS':
+        qs = qs.filter(repair_track=Repair.Track.ELECTRONICS)
+
+    return qs.order_by('priority', 'created_at')
