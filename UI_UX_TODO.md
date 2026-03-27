@@ -10,7 +10,7 @@ Fookus ei ole “ilusam admin”, vaid:
 
 ---
 
-# 1. Üldised UI põhimõtted
+# 1. Üldised UI põhimõtted ✅
 
 ## Eesmärgid
 - kasutaja peab kiiresti aru saama, kus ta on
@@ -19,118 +19,118 @@ Fookus ei ole “ilusam admin”, vaid:
 - tähtis info peab eristuma ilma, et kogu ekraan karjuks
 
 ## Üldised muudatused
-- [ ] Lisada aktiivse nav-itemi visuaalne eristus
-- [ ] Ühtlustada kõigi vaadete headeri struktuur:
-  - [ ] pealkiri
-  - [ ] lühikirjeldus
-  - [ ] primaarne tegevus
-  - [ ] sekundaarsed tegevused
-- [ ] Ühtlustada badge’ide süsteem staatuste ja prioriteetide jaoks
-- [ ] Lisada tugevam edukate tegevuste visuaalne tagasiside
-- [ ] Parandada empty state sõnumeid ja paigutust
-- [ ] Ühtlustada spacing cardide, tabelite ja action plokkide vahel
+- [x] Lisada aktiivse nav-itemi visuaalne eristus
+- [x] Ühtlustada kõigi vaadete headeri struktuur:
+  - [x] pealkiri
+  - [x] lühikirjeldus
+  - [x] primaarne tegevus
+  - [x] sekundaarsed tegevused
+- [x] Ühtlustada badge’ide süsteem staatuste ja prioriteetide jaoks
+- [x] Lisada tugevam edukate tegevuste visuaalne tagasiside
+- [x] Parandada empty state sõnumeid ja paigutust
+- [x] Ühtlustada spacing cardide, tabelite ja action plokkide vahel
 
 ---
 
-# 2. Repair List – paranduste nimekiri
+# 2. Repair List – paranduste nimekiri ✅
 
 ## Eesmärk
 Paranduste nimekiri peab olema “operatiivne juhtpaneel”, mitte lihtsalt tabel.
 
 ## Muudatused
-- [ ] Tugevdada list view headeri hierarhiat
-  - [ ] selge primaarne nupp `Lisa uus parandus`
-  - [ ] sekundaarsed tegevused `Ekspordi CSV`, `Lähtesta filtrid`
-- [ ] Lisada nähtav `Lähtesta filtrid` nupp
-- [ ] Tõsta filtriala visuaalselt eraldi tööriistaribaks
-- [ ] Parandada tabeli loetavust:
-  - [ ] tootekood visuaalselt peamiseks väljaks
-  - [ ] klient/tootegrupp sekundaarseks
-  - [ ] osakond ja parandaja kompaktsemaks
-- [ ] Lisada prioriteedi tugevam visuaalne esiletõst:
-  - [ ] kõrge prioriteet peab kohe silma jääma
-- [ ] Lisada staatuse visuaalne järjekindlus
-- [ ] Lisada rea/kaardi tasemel tähelepanusignaal töödele, mis on:
-  - [ ] kõrge prioriteediga
-  - [ ] kaua avatud
-  - [ ] määramata parandajaga
-- [ ] Kontrollida, et tabeli interaktsioonid oleksid loogilised ka mobiilsemal laiuse tasemel
+- [x] Tugevdada list view headeri hierarhiat
+  - [x] selge primaarne nupp `Lisa uus parandus`
+  - [x] sekundaarsed tegevused `Ekspordi CSV`, `Lähtesta filtrid`
+- [x] Lisada nähtav `Lähtesta filtrid` nupp
+- [x] Tõsta filtriala visuaalselt eraldi tööriistaribaks
+- [x] Parandada tabeli loetavust:
+  - [x] tootekood visuaalselt peamiseks väljaks
+  - [x] klient/tootegrupp sekundaarseks
+  - [x] osakond ja parandaja kompaktsemaks
+- [x] Lisada prioriteedi tugevam visuaalne esiletõst:
+  - [x] kõrge prioriteet peab kohe silma jääma
+- [x] Lisada staatuse visuaalne järjekindlus
+- [x] Lisada rea/kaardi tasemel tähelepanusignaal töödele, mis on:
+  - [x] kõrge prioriteediga
+  - [x] kaua avatud
+  - [x] määramata parandajaga
+- [x] Kontrollida, et tabeli interaktsioonid oleksid loogilised ka mobiilsemal laiuse tasemel
 
 ## Võimalik lisaparandus
-- [ ] Lisada nimekirja ülaserva mini-summary:
-  - [ ] kokku töid
-  - [ ] kõrge prioriteediga
-  - [ ] määramata
-  - [ ] töös
+- [x] Lisada nimekirja ülaserva mini-summary:
+  - [x] kokku töid
+  - [x] kõrge prioriteediga
+  - [x] määramata
+  - [x] töös
 
 ---
 
-# 3. Repair Detail – detailvaade
+# 3. Repair Detail – detailvaade ✅
 
 ## Eesmärk
 Detailvaade peab olema ühe kirje “juhtimiskeskus”.
 
 ## Muudatused
-- [ ] Jagada detailvaade selgemalt kolmeks tsooniks:
-  - [ ] ülevaade
-  - [ ] tegevused
-  - [ ] ajalugu/kommentaarid
-- [ ] Tugevdada ülaosa kokkuvõtet:
-  - [ ] staatus
-  - [ ] prioriteet
-  - [ ] osakond
-  - [ ] parandaja
-  - [ ] viimati uuendatud
-- [ ] Teha tegevuste plokk visuaalselt selgemaks:
-  - [ ] primaarne tegevus eespool
-  - [ ] meistri tegevused eraldi loogilise grupina
-  - [ ] parandaja tegevused eraldi loogilise grupina
-- [ ] Lisada tegevuste juurde lühike kontekstitugi, kui vaja
-- [ ] Muuta kommentaaride ala rohkem timeline-tüüpi vaateks
-- [ ] Muuta auditlogi paremini loetavaks ja vähem “tooresteks kaartideks”
-- [ ] Lisada detailvaates selgem tagasiside pärast:
-  - [ ] staatuse muutmist
-  - [ ] prioriteedi muutmist
-  - [ ] parandaja määramist
-  - [ ] kommentaari lisamist
-- [ ] Kontrollida, et detailvaate actionid oleksid rolliti hästi arusaadavad, mitte lihtsalt “nähtavad”
+- [x] Jagada detailvaade selgemalt kolmeks tsooniks:
+  - [x] ülevaade
+  - [x] tegevused
+  - [x] ajalugu/kommentaarid
+- [x] Tugevdada ülaosa kokkuvõtet:
+  - [x] staatus
+  - [x] prioriteet
+  - [x] osakond
+  - [x] parandaja
+  - [x] viimati uuendatud
+- [x] Teha tegevuste plokk visuaalselt selgemaks:
+  - [x] primaarne tegevus eespool
+  - [x] meistri tegevused eraldi loogilise grupina
+  - [x] parandaja tegevused eraldi loogilise grupina
+- [x] Lisada tegevuste juurde lühike kontekstitugi, kui vaja
+- [x] Muuta kommentaaride ala rohkem timeline-tüüpi vaateks
+- [x] Muuta auditlogi paremini loetavaks ja vähem “tooresteks kaartideks”
+- [x] Lisada detailvaates selgem tagasiside pärast:
+  - [x] staatuse muutmist
+  - [x] prioriteedi muutmist
+  - [x] parandaja määramist
+  - [x] kommentaari lisamist
+- [x] Kontrollida, et detailvaate actionid oleksid rolliti hästi arusaadavad, mitte lihtsalt “nähtavad”
 
 ## Võimalik lisaparandus
 - [ ] Lisada “vajab tähelepanu” märge, kui töö on:
-  - [ ] kõrge prioriteediga
+  - [x] kõrge prioriteediga
   - [ ] kaua muutmata
-  - [ ] parandajata
+  - [x] parandajata
 
 ---
 
-# 4. My Work – parandaja töölaud
+# 4. My Work – parandaja töölaud ✅
 
 ## Eesmärk
 See vaade peab tunduma nagu parandaja tööjärjekord, mitte lihtsalt veel üks tabel.
 
 ## Muudatused
-- [ ] Lisada vaate ülaossa mini-summary:
-  - [ ] mitu tööd kokku
-  - [ ] mitu kõrge prioriteediga
-  - [ ] mitu aktiivset
-  - [ ] mitu ootel
-- [ ] Muuta read tegevuskesksemaks
-- [ ] Teha staatuse muutmine visuaalselt lihtsamini haaratavaks
-- [ ] Muuta kommentaari lisamine vähem robustseks:
-  - [ ] inline ala paremaks
-  - [ ] või modaal / expand lahendus
-- [ ] Lisada selgem töö tähtsuse eristus
-- [ ] Lisada nähtavam tee detailvaatesse peale ID lingi
-- [ ] Mõelda läbi, kas “Minu tööd” vajab kaardi- või split-layouti väiksematel ekraanidel
+- [x] Lisada vaate ülaossa mini-summary:
+  - [x] mitu tööd kokku
+  - [x] mitu kõrge prioriteediga
+  - [x] mitu aktiivset
+  - [x] mitu ootel
+- [x] Muuta read tegevuskesksemaks
+- [x] Teha staatuse muutmine visuaalselt lihtsamini haaratavaks
+- [x] Muuta kommentaari lisamine vähem robustseks:
+  - [x] inline ala paremaks
+  - [x] või modaal / expand lahendus
+- [x] Lisada selgem töö tähtsuse eristus
+- [x] Lisada nähtavam tee detailvaatesse peale ID lingi
+- [x] Mõelda läbi, kas “Minu tööd” vajab kaardi- või split-layouti väiksematel ekraanidel
 
 ## Võimalik lisaparandus
-- [ ] Lisada “järgmine soovituslik samm” UX:
-  - [ ] kui töö on reviewed → rõhk `Alusta`
-  - [ ] kui töös → rõhk `Lõpeta` või `Pane ootele`
+- [x] Lisada “järgmine soovituslik samm” UX:
+  - [x] kui töö on reviewed → rõhk `Alusta`
+  - [x] kui töös → rõhk `Lõpeta` või `Pane ootele`
 
 ---
 
-# 5. Dashboard – juhtimisvaade
+# 5. Dashboard – juhtimisvaade ✅
 
 ## Eesmärk
 Dashboard peab aitama juhil/meistril kohe näha:
@@ -139,85 +139,85 @@ Dashboard peab aitama juhil/meistril kohe näha:
 - kellel on koormus
 
 ## Muudatused
-- [ ] Tugevdada dashboardi kolmeks sisuliseks tsooniks:
-  - [ ] hetkeseis
-  - [ ] vajab tähelepanu
-  - [ ] koormus
-- [ ] Kujundada KPI plokid tugevama hierarhiaga
-- [ ] Tõsta “vanimad avatud tööd” visuaalselt tähtsamaks
-- [ ] Lisada eraldi plokk töödele, mis vajavad kiiret sekkumist:
-  - [ ] kõrge prioriteediga avatud tööd
-  - [ ] parandajata tööd
-  - [ ] kaua avatud tööd
-- [ ] Parandada “tööde arv parandajate kaupa” visuaalset esitlust
-  - [ ] lihtne tabel või bar chart
-- [ ] Kontrollida, et chartid ei oleks dekoratsioon, vaid aitaksid otsustada
+- [x] Tugevdada dashboardi kolmeks sisuliseks tsooniks:
+  - [x] hetkeseis
+  - [x] vajab tähelepanu
+  - [x] koormus
+- [x] Kujundada KPI plokid tugevama hierarhiaga
+- [x] Tõsta “vanimad avatud tööd” visuaalselt tähtsamaks
+- [x] Lisada eraldi plokk töödele, mis vajavad kiiret sekkumist:
+  - [x] kõrge prioriteediga avatud tööd
+  - [x] parandajata tööd
+  - [x] kaua avatud tööd
+- [x] Parandada “tööde arv parandajate kaupa” visuaalset esitlust
+  - [x] lihtne tabel või bar chart
+- [x] Kontrollida, et chartid ei oleks dekoratsioon, vaid aitaksid otsustada
 
 ## Võimalik lisaparandus
-- [ ] Lisada dashboardilt otseteed tegutsemiseks:
-  - [ ] `Vaata kõiki töid`
+- [x] Lisada dashboardilt otseteed tegutsemiseks:
+  - [x] `Vaata kõiki töid`
   - [ ] `Vaata parandajata töid`
-  - [ ] `Loo uus parandus`
+  - [x] `Loo uus parandus`
 
 ---
 
-# 6. Rollipõhine visuaalne juhtimine
+# 6. Rollipõhine visuaalne juhtimine ✅
 
 ## Osakonna juht
-- [ ] rõhutada uue paranduse lisamist
-- [ ] rõhutada oma osakonna tööde nähtavust
-- [ ] hoida vaade vähem operatiivmüra täis
+- [x] rõhutada uue paranduse lisamist
+- [x] rõhutada oma osakonna tööde nähtavust
+- [x] hoida vaade vähem operatiivmüra täis
 
 ## Parandaja
-- [ ] rõhutada “Minu tööd” kui põhitöölauda
-- [ ] teha järgmine tegevus võimalikult lihtsaks
-- [ ] vähendada kõrvalisi juhtimisfunktsioone
+- [x] rõhutada “Minu tööd” kui põhitöölauda
+- [x] teha järgmine tegevus võimalikult lihtsaks
+- [x] vähendada kõrvalisi juhtimisfunktsioone
 
 ## Meister
-- [ ] rõhutada dashboardi, määramist ja prioriseerimist
-- [ ] näidata ummikud ja koormus võimalikult kiirelt
+- [x] rõhutada dashboardi, määramist ja prioriseerimist
+- [x] näidata ummikud ja koormus võimalikult kiirelt
 
 ## Admin
-- [ ] teha selgeks, et admini töövoog on süsteemihaldus, mitte ainult sama kasutajavaade rohkemate õigustega
-- [ ] lisada vajadusel nähtavam tee admin-paneeli
+- [x] teha selgeks, et admini töövoog on süsteemihaldus, mitte ainult sama kasutajavaade rohkemate õigustega
+- [x] lisada vajadusel nähtavam tee admin-paneeli
 
 ---
 
-# 7. Mikro-UX parandused
+# 7. Mikro-UX parandused (osaliselt tehtud)
 
-- [ ] Lisada aktiivse lehe visuaalne indikaator navigatsioonis
-- [ ] Lisada selgemad success/error sõnumid async tegevustele
+- [x] Lisada aktiivse lehe visuaalne indikaator navigatsioonis
+- [x] Lisada selgemad success/error sõnumid async tegevustele
 - [ ] Lisada “Tühista” ja “Tagasi” nupud järjekindla loogikaga
-- [ ] Lisada vormides selgem veasõnumite kujundus
-- [ ] Kontrollida nuppude järjestust: primaarne enne, sekundaarsed pärast
-- [ ] Lisada detailvaates ja listis parem visuaalne kontrast oluliste badge’ide jaoks
+- [x] Lisada vormides selgem veasõnumite kujundus
+- [x] Kontrollida nuppude järjestust: primaarne enne, sekundaarsed pärast
+- [x] Lisada detailvaates ja listis parem visuaalne kontrast oluliste badge’ide jaoks
 
 ---
 
 # 8. Soovitatud teostusjärjekord
 
-## Etapp 1 – Struktuur ja leitavus
-- [ ] aktiivne nav
-- [ ] ühtne header hierarchy
-- [ ] primaarne/sekundaarne action loogika
-- [ ] quick actions ülevaatus
+## Etapp 1 – Struktuur ja leitavus ✅
+- [x] aktiivne nav
+- [x] ühtne header hierarchy
+- [x] primaarne/sekundaarne action loogika
+- [x] quick actions ülevaatus
 
-## Etapp 2 – List ja detail
-- [ ] list view visuaalne prioriseerimine
-- [ ] detailvaate tsoonide ümberkujundus
-- [ ] kommentaaride / ajaloo parem esitlus
+## Etapp 2 – List ja detail ✅
+- [x] list view visuaalne prioriseerimine
+- [x] detailvaate tsoonide ümberkujundus
+- [x] kommentaaride / ajaloo parem esitlus
 
-## Etapp 3 – My Work ja Dashboard
-- [ ] my-work töölaudlikumaks
-- [ ] dashboardi tähelepanu-tsoonid
-- [ ] workload visualiseerimine
+## Etapp 3 – My Work ja Dashboard ✅
+- [x] my-work töölaudlikumaks
+- [x] dashboardi tähelepanu-tsoonid
+- [x] workload visualiseerimine
 
-## Etapp 4 – Polishing
+## Etapp 4 – Polishing (osaliselt tehtud)
 - [ ] mikro-UX
-- [ ] spacing
-- [ ] badge consistency
-- [ ] empty states
-- [ ] feedback states
+- [x] spacing
+- [x] badge consistency
+- [x] empty states
+- [x] feedback states
 
 ---
 
@@ -229,3 +229,9 @@ See UX/UI pakett on valmis siis, kui:
 - tähtsad tööd eristuvad visuaalselt
 - rollipõhised töövood tunduvad sihipärased, mitte juhuslikud
 - UI ei ole ainult funktsionaalne, vaid juhib kasutajat teadlikult
+
+
+# 10. Audit update
+
+Pärast uut täis-UI auditit on punktid 1–6 hinnatud sisuliselt tehtuks.
+Punkt 7 on märgitud osaliselt tehtuks, sest mikro-UX on selgelt parem, kuid mõned viimased järjekindluse/detaili lihvid on veel võimalikud.
