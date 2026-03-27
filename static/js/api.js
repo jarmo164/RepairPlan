@@ -17,14 +17,8 @@
   }
 
   async function request(method, url, data) {
-    const headers = {
-      'Accept': 'application/json',
-    };
-    const options = {
-      method,
-      headers,
-      credentials: 'same-origin',
-    };
+    const headers = { 'Accept': 'application/json' };
+    const options = { method, headers, credentials: 'same-origin' };
 
     if (data !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -33,6 +27,7 @@
 
     if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
       headers['X-CSRFToken'] = getCsrfToken();
+      headers['X-Requested-With'] = 'XMLHttpRequest';
     }
 
     setLoading(true);
@@ -40,12 +35,10 @@
       const response = await fetch(url, options);
       const contentType = response.headers.get('content-type') || '';
       const payload = contentType.includes('application/json') ? await response.json() : await response.text();
-
       if (!response.ok) {
         const detail = typeof payload === 'object' ? (payload.detail || JSON.stringify(payload)) : payload;
         throw new Error(detail || `Request failed with status ${response.status}`);
       }
-
       return payload;
     } catch (error) {
       console.error('RepairPlan API error', error);

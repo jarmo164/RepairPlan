@@ -135,3 +135,17 @@ body {
 .role-banner.role-admin {
   border-left: 4px solid #6f42c1;
 }
+
+.btn:focus-visible,
+.form-control:focus,
+.form-select:focus {
+  box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+}
+
+.card-header {
+  font-weight: 600;
+}
+
+.alert {
+  border-radius: 0.75rem;
+}

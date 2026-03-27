@@ -194,6 +194,7 @@
       tbody.appendChild(fragment);
     } catch (error) {
       tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">${error.message}</td></tr>`;
+      showFeedback(error.message, 'danger');
     }
   }
 
