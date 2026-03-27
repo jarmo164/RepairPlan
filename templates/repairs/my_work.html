@@ -51,7 +51,7 @@
 <div class="card section-card">
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <span>Minu tööde nimekiri</span>
-    <span class="small text-body-secondary">Tööta ülevalt alla: staatus, kommentaar, detail.</span>
+    <span class="small text-body-secondary">Muuda staatust, lisa vajadusel kommentaar ja ava detail.</span>
   </div>
   <div class="table-responsive">
     <table class="table align-middle mb-0" id="my-work-table">
@@ -62,13 +62,12 @@
           <th>Kogus</th>
           <th>Rada</th>
           <th>Staatus</th>
-          <th>Järgmine tegevus</th>
           <th>Kommentaar</th>
           <th>Detail</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td colspan="6" class="text-center text-body-secondary py-4">Laen töid…</td></tr>
+        <tr><td colspan="7" class="text-center text-body-secondary py-4">Laen töid…</td></tr>
       </tbody>
     </table>
   </div>
@@ -86,19 +85,13 @@
     setTimeout(() => { feedback.innerHTML = ''; }, 3000);
   }
 
-  function suggestionLabel(status) {
-    if (status === 'REVIEWED') return 'Soovitus: alusta tööga';
-    if (status === 'IN_PROGRESS') return 'Soovitus: lõpeta või pane ootele';
-    if (status === 'ON_HOLD') return 'Soovitus: taasta töösse';
-    if (status === 'NOT_STARTED') return 'Ootab ülevaatust';
-    return 'Jälgi töö seisu';
-  }
-
-  function buildSelect(currentValue, repairId) {
+  function buildStatusEditor(currentValue, repairId) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'vstack gap-2';
+    wrapper.className = 'd-flex gap-2 align-items-center';
+
     const select = document.createElement('select');
     select.className = 'form-select form-select-sm';
+    select.style.maxWidth = '180px';
     statusChoices.forEach(([value, label]) => {
       const option = document.createElement('option');
       option.value = value;
@@ -106,10 +99,11 @@
       option.selected = value === currentValue;
       select.appendChild(option);
     });
+
     const button = document.createElement('button');
-    button.className = 'btn btn-primary btn-sm align-self-start';
+    button.className = 'btn btn-primary btn-sm';
     button.type = 'button';
-    button.textContent = 'Salvesta staatus';
+    button.textContent = 'Salvesta';
     button.addEventListener('click', async () => {
       try {
         await RepairPlanApi.post(`/api/repairs/${repairId}/change-status/`, { status: select.value });
@@ -119,57 +113,49 @@
         showFeedback(error.message, 'danger');
       }
     });
+
     wrapper.appendChild(select);
     wrapper.appendChild(button);
     return wrapper;
   }
 
-  function buildCommentToggle(repairId) {
+  function buildCommentEditor(repairId) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'vstack gap-2';
-    wrapper.innerHTML = `
-      <button class="btn btn-outline-secondary btn-sm" type="button">Lisa kommentaar</button>
-      <div class="d-none">
-        <div class="input-group input-group-sm">
-          <input type="text" class="form-control" name="comment" placeholder="Lisa kommentaar…">
-          <button class="btn btn-outline-primary" type="button">Salvesta</button>
-          <button class="btn btn-outline-secondary" type="button" data-cancel-comment>Loobu</button>
-        </div>
-      </div>
-    `;
-    const toggleBtn = wrapper.children[0];
-    const panel = wrapper.children[1];
-    const input = panel.querySelector('input[name="comment"]');
-    const submit = panel.querySelector('button.btn-outline-primary');
-    const cancel = panel.querySelector('[data-cancel-comment]');
+    wrapper.className = 'd-flex gap-2 align-items-center';
 
-    toggleBtn.addEventListener('click', () => {
-      panel.classList.toggle('d-none');
-      if (!panel.classList.contains('d-none')) input.focus();
-    });
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.name = 'comment';
+    input.placeholder = 'Lisa kommentaar (valikuline)…';
+    input.className = 'form-control form-control-sm';
 
-    cancel.addEventListener('click', () => {
-      input.value = '';
-      panel.classList.add('d-none');
-    });
-
-    submit.addEventListener('click', async () => {
+    const button = document.createElement('button');
+    button.className = 'btn btn-outline-primary btn-sm';
+    button.type = 'button';
+    button.textContent = 'Salvesta';
+    button.addEventListener('click', async () => {
+      const value = input.value.trim();
+      if (!value) {
+        showFeedback('Kommentaar on tühi — midagi ei salvestatud.', 'secondary');
+        return;
+      }
       try {
-        await RepairPlanApi.post(`/api/repairs/${repairId}/comments/`, { comment: input.value });
+        await RepairPlanApi.post(`/api/repairs/${repairId}/comments/`, { comment: value });
         input.value = '';
-        panel.classList.add('d-none');
         showFeedback(`Kommentaar tööle #${repairId} lisatud.`);
       } catch (error) {
         showFeedback(error.message, 'danger');
       }
     });
 
+    wrapper.appendChild(input);
+    wrapper.appendChild(button);
     return wrapper;
   }
 
   function rowClass(repair) {
+    if (repair.repair_track === 'ELECTRONICS') return 'repair-row repair-row--electronics';
     if (repair.priority === 'HIGH') return 'repair-row repair-row--high';
-    if (repair.status === 'ON_HOLD') return 'repair-row repair-row--unassigned';
     return 'repair-row';
   }
 
@@ -178,7 +164,7 @@
       const data = await RepairPlanApi.get('/api/repairs/my-work/');
       tbody.innerHTML = '';
       if (!data.results.length) {
-        tbody.innerHTML = RepairPlanUi.emptyState('Sulle ei ole praegu töid määratud.', 8);
+        tbody.innerHTML = RepairPlanUi.emptyState('Sulle ei ole praegu töid määratud.', 7);
         return;
       }
       const fragment = document.createDocumentFragment();
@@ -193,18 +179,17 @@
           </td>
           <td><span class="fw-semibold">${repair.quantity}</span></td>
           <td>${RepairPlanUi.trackBadge(repair.repair_track_label)}</td>
-          <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
-          <td><span class="small text-body-secondary">${suggestionLabel(repair.status)}</span></td>
+          <td></td>
           <td></td>
           <td><a class="btn btn-outline-secondary btn-sm" href="/repairs/${repair.id}/">Ava detail</a></td>
         `;
-        row.children[3].appendChild(buildSelect(repair.status, repair.id));
-        row.children[4].appendChild(buildCommentToggle(repair.id));
+        row.children[4].appendChild(buildStatusEditor(repair.status, repair.id));
+        row.children[5].appendChild(buildCommentEditor(repair.id));
         fragment.appendChild(row);
       });
       tbody.appendChild(fragment);
     } catch (error) {
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">${error.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">${error.message}</td></tr>`;
       showFeedback(error.message, 'danger');
     }
   }
