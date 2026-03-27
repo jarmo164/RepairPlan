@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.db.models import Count
 
 from .models import Repair
@@ -90,3 +89,13 @@ def dashboard_repair_counts_by_repairer(user):
         }
         for row in grouped
     ]
+
+
+def repair_list_summary_for(user):
+    qs = repairs_visible_to(user)
+    return {
+        'total': qs.count(),
+        'high_priority': qs.filter(priority=Repair.Priority.HIGH).count(),
+        'unassigned': qs.filter(assigned_to__isnull=True).count(),
+        'in_progress': qs.filter(status=Repair.Status.IN_PROGRESS).count(),
+    }

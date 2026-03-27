@@ -31,6 +31,7 @@ from .selectors import (
     dashboard_oldest_open_repairs_for,
     dashboard_repair_counts_by_repairer,
     dashboard_summary_for,
+    repair_list_summary_for,
     filter_repairs_for_user,
     my_work_for,
     repairs_visible_to,
@@ -86,6 +87,7 @@ class RepairListView(LoginRequiredMixin, View):
             'priority_choices': Repair.Priority.choices,
             'search': request.GET.get('search', ''),
             'filters': request.GET,
+            'list_summary': repair_list_summary_for(request.user),
             'nav_key': 'repair-list',
             **build_navigation_context(request.user),
         }

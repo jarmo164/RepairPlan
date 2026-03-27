@@ -3,17 +3,58 @@
 {% block content %}
 <div class="page-header">
   <div>
-    <div><h1 class="h3 page-header__title">Parandused</h1>
-    <p class="page-header__subtitle">Filtreeritav nimekiri, mille read laetakse API kaudu.</p></div>
+    <h1 class="h3 page-header__title">Parandused</h1>
+    <p class="page-header__subtitle">Filtreeritav nimekiri, mille read laetakse API kaudu.</p>
+  </div>
   <div class="page-header__actions">
     <a class="btn btn-primary" href="{% url 'repairs:repair-create' %}">Lisa parandus</a>
     <button class="btn btn-outline-secondary" type="button" id="reset-filters-btn">Lähtesta filtrid</button>
+    <a class="btn btn-outline-success" id="export-repairs-link" href="/api/repairs/export/">Ekspordi CSV</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="card section-card h-100">
+      <div class="card-body">
+        <div class="small text-body-secondary mb-1">Kokku</div>
+        <div class="display-6" id="summary-total">{{ list_summary.total }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card section-card h-100 border-danger-subtle">
+      <div class="card-body">
+        <div class="small text-body-secondary mb-1">Kõrge prioriteet</div>
+        <div class="display-6 text-danger" id="summary-high-priority">{{ list_summary.high_priority }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card section-card h-100 border-warning-subtle">
+      <div class="card-body">
+        <div class="small text-body-secondary mb-1">Määramata</div>
+        <div class="display-6 text-warning-emphasis" id="summary-unassigned">{{ list_summary.unassigned }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="card section-card h-100 border-info-subtle">
+      <div class="card-body">
+        <div class="small text-body-secondary mb-1">Töös</div>
+        <div class="display-6 text-info-emphasis" id="summary-in-progress">{{ list_summary.in_progress }}</div>
+      </div>
+    </div>
   </div>
 </div>
 
 <div id="repairs-feedback" class="mb-3"></div>
 
 <div class="card mb-4 section-card">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span>Filtrid</span>
+    <span class="small text-body-secondary">Kasuta filtreid, et leida kiiresti tähelepanu vajavad tööd.</span>
+  </div>
   <div class="card-body">
     <form id="repairs-filter-form" class="row g-3">
       <div class="col-md-4">
@@ -50,16 +91,17 @@
       <div class="col-md-1 d-flex align-items-end">
         <button class="btn btn-primary w-100" type="submit">Filtreeri</button>
       </div>
-      <div class="col-md-12 d-flex justify-content-end">
-        <a class="btn btn-outline-success" id="export-repairs-link" href="/api/repairs/export/">Ekspordi CSV</a>
-      </div>
     </form>
   </div>
 </div>
 
 <div class="card section-card">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span>Paranduste nimekiri</span>
+    <span class="small text-body-secondary">Punane = kõrge prioriteet, kollane = määramata töö, rõhutatud read vajavad tähelepanu.</span>
+  </div>
   <div class="table-responsive">
-    <table class="table mb-0" id="repairs-list-table">
+    <table class="table align-middle mb-0" id="repairs-list-table">
       <thead>
         <tr>
           <th>ID</th>
@@ -96,31 +138,55 @@
   const summary = document.getElementById('repairs-pagination-summary');
   const exportLink = document.getElementById('export-repairs-link');
   const feedback = document.getElementById('repairs-feedback');
-  let currentPage = 1;
   const resetBtn = document.getElementById('reset-filters-btn');
+  let currentPage = 1;
 
   function showFeedback(message, type = 'success') {
-    feedback.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+    feedback.innerHTML = RepairPlanUi.feedback(message, type);
     setTimeout(() => { feedback.innerHTML = ''; }, 2500);
+  }
+
+  function updateSummary(items) {
+    const highPriority = items.filter((item) => item.priority === 'HIGH').length;
+    const unassigned = items.filter((item) => !item.assigned_to).length;
+    const inProgress = items.filter((item) => item.status === 'IN_PROGRESS').length;
+    document.getElementById('summary-total').textContent = items.length;
+    document.getElementById('summary-high-priority').textContent = highPriority;
+    document.getElementById('summary-unassigned').textContent = unassigned;
+    document.getElementById('summary-in-progress').textContent = inProgress;
+  }
+
+  function rowClass(repair) {
+    if (repair.priority === 'HIGH' && !repair.assigned_to) return 'repair-row repair-row--critical';
+    if (repair.priority === 'HIGH') return 'repair-row repair-row--high';
+    if (!repair.assigned_to) return 'repair-row repair-row--unassigned';
+    return 'repair-row';
   }
 
   function renderRows(items) {
     if (!items.length) {
       tbody.innerHTML = RepairPlanUi.emptyState('Kirjeid ei leitud.', 8);
+      updateSummary([]);
       return;
     }
-    tbody.innerHTML = items.map((repair) => `
-      <tr>
+    updateSummary(items);
+    tbody.innerHTML = items.map((repair) => {
+      const attention = !repair.assigned_to ? '<span class="small text-warning-emphasis d-block">Vajab määramist</span>' : '';
+      return `
+      <tr class="${rowClass(repair)}">
         <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
-        <td>${repair.product_code}</td>
-        <td>${repair.client_or_group}</td>
+        <td>
+          <div class="fw-semibold">${repair.product_code}</div>
+          ${attention}
+        </td>
+        <td><span class="text-body-secondary">${repair.client_or_group}</span></td>
         <td>${repair.department}</td>
         <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
         <td>${RepairPlanUi.priorityBadge(repair.priority_label)}</td>
-        <td>${repair.assigned_to ?? '—'}</td>
+        <td>${repair.assigned_to ?? '<span class="text-warning-emphasis">Määramata</span>'}</td>
         <td>${new Date(repair.created_at).toLocaleString('et-EE')}</td>
-      </tr>
-    `).join('');
+      </tr>`;
+    }).join('');
   }
 
   async function loadPage(page = 1) {
@@ -146,6 +212,13 @@
     await loadPage(1);
     showFeedback('Filtrid uuendatud.');
   });
+
+  resetBtn.addEventListener('click', async () => {
+    form.reset();
+    await loadPage(1);
+    showFeedback('Filtrid lähtestatud.');
+  });
+
   const searchInput = form.querySelector('input[name="search"]');
   searchInput.addEventListener('input', RepairPlanUi.debounce(() => loadPage(1), 300));
   prevBtn.addEventListener('click', async () => loadPage(currentPage - 1));
