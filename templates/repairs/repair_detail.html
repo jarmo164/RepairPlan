@@ -70,43 +70,43 @@
     </div>
 
     <div class="card mb-4 section-card">
-      <div class="card-header">Järgmine tegevus</div>
+      <div class="card-header">Muudatused</div>
       <div class="card-body vstack gap-3" id="repair-actions-panel">
-        {% if action_flags.can_assign or action_flags.can_change_priority or action_flags.can_change_status %}
-          <div class="small text-body-secondary">Tee siin need muudatused, mida sinu roll selle töö puhul lubab.</div>
-        {% endif %}
+        <div class="small text-body-secondary">Muuda välju, lisa soovi korral kommentaar ja salvesta kõik korraga.</div>
 
         {% if action_flags.can_assign %}
         <div class="action-block">
-          <label class="form-label small text-body-secondary">Määra või muuda parandajat</label>
-          <div class="input-group input-group-sm">
-            <select class="form-select" id="assign-select"></select>
-            <button class="btn btn-outline-primary" type="button" id="assign-submit">Salvesta määramine</button>
-          </div>
+          <label class="form-label small text-body-secondary">Parandaja</label>
+          <select class="form-select form-select-sm" id="assign-select"></select>
         </div>
         {% endif %}
 
         {% if action_flags.can_change_priority %}
         <div class="action-block">
-          <label class="form-label small text-body-secondary">Muuda prioriteeti</label>
-          <div class="input-group input-group-sm">
-            <select class="form-select" id="priority-select"></select>
-            <button class="btn btn-outline-primary" type="button" id="priority-submit">Salvesta prioriteet</button>
-          </div>
+          <label class="form-label small text-body-secondary">Prioriteet</label>
+          <select class="form-select form-select-sm" id="priority-select"></select>
         </div>
         {% endif %}
 
         {% if action_flags.can_change_status %}
         <div class="action-block action-block--primary">
-          <label class="form-label small text-body-secondary">Muuda töö staatust</label>
-          <div class="input-group input-group-sm">
-            <select class="form-select" id="status-select"></select>
-            <button class="btn btn-primary" type="button" id="status-submit">Salvesta staatus</button>
-          </div>
+          <label class="form-label small text-body-secondary">Staatus</label>
+          <select class="form-select form-select-sm" id="status-select"></select>
         </div>
         {% endif %}
 
-        {% if not action_flags.can_assign and not action_flags.can_change_priority and not action_flags.can_change_status and not action_flags.can_comment %}
+        {% if action_flags.can_comment %}
+        <div class="action-block">
+          <label class="form-label small text-body-secondary">Kommentaar (valikuline)</label>
+          <textarea class="form-control" rows="3" id="combined-comment" placeholder="Lisa kommentaar, kui vaja…"></textarea>
+        </div>
+        {% endif %}
+
+        {% if action_flags.can_assign or action_flags.can_change_priority or action_flags.can_change_status or action_flags.can_comment %}
+        <div class="d-flex justify-content-end">
+          <button class="btn btn-primary" type="button" id="save-all-actions">Salvesta muudatused</button>
+        </div>
+        {% else %}
         <div class="text-body-secondary small">Selle kirje jaoks pole sulle täiendavaid tegevusi saadaval.</div>
         {% endif %}
       </div>
@@ -114,21 +114,6 @@
   </div>
 
   <div class="col-lg-7">
-    {% if action_flags.can_comment %}
-    <div class="card mb-4 section-card">
-      <div class="card-header">Lisa kommentaar</div>
-      <div class="card-body">
-        <form id="detail-comment-form" class="vstack gap-3">
-          {% csrf_token %}
-          {{ comment_form.comment }}
-          <div class="d-flex justify-content-end">
-            <button class="btn btn-primary" type="submit">Salvesta kommentaar</button>
-          </div>
-        </form>
-      </div>
-    </div>
-    {% endif %}
-
     <div class="card mb-4 section-card">
       <div class="card-header">Kommentaarid</div>
       <div class="card-body">
@@ -216,67 +201,52 @@
     const priorityBadge = document.getElementById('repair-priority-badge');
     const assigneeValue = document.getElementById('repair-assignee-value');
     const updatedAt = document.getElementById('repair-updated-at');
+    const trackValue = document.getElementById('repair-track-value');
     if (statusBadge) statusBadge.outerHTML = RepairPlanUi.statusBadge(detail.status_label);
     if (priorityBadge) priorityBadge.outerHTML = RepairPlanUi.priorityBadge(detail.priority_label);
     if (assigneeValue) assigneeValue.innerHTML = RepairPlanUi.assigneeLabel(detail.assigned_to, detail.assigned_to_specialty);
-    const trackValue = document.getElementById('repair-track-value');
-    if (trackValue) trackValue.innerHTML = RepairPlanUi.trackBadge(detail.repair_track_label);
     if (updatedAt) updatedAt.textContent = new Date(detail.updated_at).toLocaleString('et-EE');
+    if (trackValue) trackValue.innerHTML = RepairPlanUi.trackBadge(detail.repair_track_label);
   }
 
-  function wireActionButtons() {
+  async function saveAll() {
+    const payload = {};
+    const assignSelect = document.getElementById('assign-select');
+    const prioritySelect = document.getElementById('priority-select');
+    const statusSelect = document.getElementById('status-select');
+    const commentField = document.getElementById('combined-comment');
+
+    if (assignSelect) payload.assigned_to = assignSelect.value ? Number(assignSelect.value) : null;
+    if (prioritySelect) payload.priority = prioritySelect.value;
+    if (statusSelect) payload.status = statusSelect.value;
+    if (commentField) payload.comment = commentField.value;
+
+    try {
+      const detail = await RepairPlanApi.post(`/api/repairs/${repairId}/save-actions/`, payload);
+      updateMeta(detail);
+      if (commentField) commentField.value = '';
+      await Promise.all([loadComments(), loadHistory()]);
+      showFeedback('Muudatused salvestatud.');
+    } catch (error) {
+      showFeedback(error.message, 'danger');
+    }
+  }
+
+  function initControls() {
     const assignSelect = document.getElementById('assign-select');
     const statusSelect = document.getElementById('status-select');
     const prioritySelect = document.getElementById('priority-select');
-
-    if (assignSelect) {
-      assignSelect.innerHTML = optionMarkup(assigneeChoices, currentAssigneeId, true);
-      document.getElementById('assign-submit').addEventListener('click', async () => {
-        const value = assignSelect.value ? Number(assignSelect.value) : null;
-        const detail = await RepairPlanApi.post(`/api/repairs/${repairId}/assign/`, { assigned_to: value });
-        updateMeta(detail);
-        await loadHistory();
-        showFeedback('Parandaja uuendatud.');
-      });
-    }
-
-    if (statusSelect) {
-      statusSelect.innerHTML = optionMarkup(statusChoices, currentStatus);
-      document.getElementById('status-submit').addEventListener('click', async () => {
-        const detail = await RepairPlanApi.post(`/api/repairs/${repairId}/change-status/`, { status: statusSelect.value });
-        updateMeta(detail);
-        await loadHistory();
-        showFeedback('Staatus uuendatud.');
-      });
-    }
-
-    if (prioritySelect) {
-      prioritySelect.innerHTML = optionMarkup(priorityChoices, currentPriority);
-      document.getElementById('priority-submit').addEventListener('click', async () => {
-        const detail = await RepairPlanApi.post(`/api/repairs/${repairId}/change-priority/`, { priority: prioritySelect.value });
-        updateMeta(detail);
-        await loadHistory();
-        showFeedback('Prioriteet uuendatud.');
-      });
-    }
+    if (assignSelect) assignSelect.innerHTML = optionMarkup(assigneeChoices, currentAssigneeId, true);
+    if (statusSelect) statusSelect.innerHTML = optionMarkup(statusChoices, currentStatus);
+    if (prioritySelect) prioritySelect.innerHTML = optionMarkup(priorityChoices, currentPriority);
+    const saveBtn = document.getElementById('save-all-actions');
+    if (saveBtn) saveBtn.addEventListener('click', saveAll);
   }
 
   async function init() {
     try {
-      wireActionButtons();
+      initControls();
       await Promise.all([loadComments(), loadHistory()]);
-      const commentForm = document.getElementById('detail-comment-form');
-      if (commentForm) {
-        commentForm.addEventListener('submit', async (event) => {
-          event.preventDefault();
-          const textarea = commentForm.querySelector('textarea[name="comment"]');
-          const payload = { comment: textarea.value };
-          await RepairPlanApi.post(`/api/repairs/${repairId}/comments/`, payload);
-          textarea.value = '';
-          await loadComments();
-          showFeedback('Kommentaar lisatud.');
-        });
-      }
     } catch (error) {
       commentsContainer.innerHTML = `<div class="text-danger">${error.message}</div>`;
       historyContainer.innerHTML = `<div class="text-danger">${error.message}</div>`;

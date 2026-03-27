@@ -101,3 +101,10 @@ class RepairStatusLogSerializer(serializers.ModelSerializer):
             'assigned_to': 'Parandaja',
         }
         return mapping.get(obj.field_name, obj.field_name)
+
+
+class RepairCombinedActionSerializer(serializers.Serializer):
+    assigned_to = serializers.IntegerField(allow_null=True, required=False)
+    priority = serializers.ChoiceField(choices=Repair.Priority.choices, required=False)
+    status = serializers.ChoiceField(choices=Repair.Status.choices, required=False)
+    comment = serializers.CharField(required=False, allow_blank=True)

@@ -41,6 +41,7 @@ from .selectors import (
 from .serializers import (
     RepairAssignSerializer,
     RepairCommentSerializer,
+    RepairCombinedActionSerializer,
     RepairCreateSerializer,
     RepairDetailSerializer,
     RepairListSerializer,
@@ -376,6 +377,42 @@ class RepairPriorityChangeApiView(APIView):
         except ValidationError as exc:
             return Response({'detail': exc.message}, status=status.HTTP_403_FORBIDDEN)
         repair.refresh_from_db()
+        return Response(RepairDetailSerializer(repair).data)
+
+
+class RepairCombinedActionApiView(APIView):
+    permission_classes = [RepairApiPermission]
+
+    def post(self, request, pk):
+        repair = get_object_or_404(repairs_visible_to(request.user), pk=pk)
+        serializer = RepairCombinedActionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+        try:
+            if 'assigned_to' in data:
+                assigned_to = None
+                assigned_to_id = data.get('assigned_to')
+                if assigned_to_id:
+                    assigned_to = get_object_or_404(get_user_model(), pk=assigned_to_id)
+                assign_repair(repair=repair, assigned_to=assigned_to, changed_by=request.user)
+                repair.refresh_from_db()
+
+            if 'priority' in data:
+                change_priority(repair=repair, priority=data['priority'], changed_by=request.user)
+                repair.refresh_from_db()
+
+            if 'status' in data:
+                change_status(repair=repair, status=data['status'], changed_by=request.user)
+                repair.refresh_from_db()
+
+            comment = (data.get('comment') or '').strip()
+            if comment:
+                add_comment(repair=repair, author=request.user, comment=comment)
+
+        except ValidationError as exc:
+            return Response({'detail': exc.message}, status=status.HTTP_403_FORBIDDEN)
+
         return Response(RepairDetailSerializer(repair).data)
 
 
