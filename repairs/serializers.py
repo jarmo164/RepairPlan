@@ -24,14 +24,22 @@ class RepairListSerializer(serializers.ModelSerializer):
     assigned_to = serializers.StringRelatedField()
     priority_label = serializers.CharField(source='get_priority_display', read_only=True)
     status_label = serializers.CharField(source='get_status_display', read_only=True)
+    repair_track_label = serializers.CharField(source='get_repair_track_display', read_only=True)
+    assigned_to_specialty = serializers.SerializerMethodField()
 
     class Meta:
         model = Repair
         fields = [
             'id', 'product_code', 'quantity', 'client_or_group', 'department', 'repair_track', 'created_at',
-            'created_by', 'priority', 'priority_label', 'status', 'status_label', 'assigned_to', 'updated_at',
+            'created_by', 'priority', 'priority_label', 'status', 'status_label', 'assigned_to', 'assigned_to_specialty', 'repair_track_label', 'updated_at',
         ]
 
+
+
+    def get_assigned_to_specialty(self, obj):
+        if obj.assigned_to and hasattr(obj.assigned_to, 'profile'):
+            return obj.assigned_to.profile.specialty
+        return None
 
 class RepairDetailSerializer(RepairListSerializer):
     comments_count = serializers.IntegerField(source='comments.count', read_only=True)

@@ -108,6 +108,7 @@
           <th>Tootekood</th>
           <th>Kogus</th>
           <th>Klient / grupp</th>
+          <th>Rada</th>
           <th>Osakond</th>
           <th>Staatus</th>
           <th>Prioriteet</th>
@@ -172,7 +173,7 @@
 
   function renderRows(items) {
     if (!items.length) {
-      tbody.innerHTML = RepairPlanUi.emptyState('Kirjeid ei leitud.', 9);
+      tbody.innerHTML = RepairPlanUi.emptyState('Kirjeid ei leitud.', 10);
       updateSummary([]);
       return;
     }
@@ -210,7 +211,7 @@
       prevBtn.disabled = !data.pagination.has_previous;
       nextBtn.disabled = !data.pagination.has_next;
     } catch (error) {
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">${error.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">${error.message}</td></tr>`;
       showFeedback(error.message, 'danger');
     }
   }

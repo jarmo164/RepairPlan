@@ -43,7 +43,7 @@
     <div class="card section-card h-100">
       <div class="card-body">
         <div class="small text-body-secondary mb-1">Parandaja</div>
-        <div class="fw-semibold" id="repair-assignee-value">{{ repair.assigned_to|default:'Määramata' }}</div>
+        <div class="fw-semibold d-flex align-items-center gap-1" id="repair-assignee-value">{{ repair.assigned_to|default:'Määramata' }}</div>
       </div>
     </div>
   </div>
@@ -59,6 +59,7 @@
         <dl class="row mb-0 detail-meta-list">
           <dt class="col-sm-5">Tootekood</dt><dd class="col-sm-7 fw-semibold">{{ repair.product_code }}</dd>
           <dt class="col-sm-5">Osakond</dt><dd class="col-sm-7">{{ repair.department }}</dd>
+          <dt class="col-sm-5">Rada</dt><dd class="col-sm-7" id="repair-track-value">{{ repair.get_repair_track_display }}</dd>
           <dt class="col-sm-5">Kogus</dt><dd class="col-sm-7">{{ repair.quantity }}</dd>
           <dt class="col-sm-5">Klient / grupp</dt><dd class="col-sm-7">{{ repair.client_or_group }}</dd>
           <dt class="col-sm-5">Loodud</dt><dd class="col-sm-7">{{ repair.created_at|date:"d.m.Y H:i" }}</dd>
@@ -217,7 +218,9 @@
     const updatedAt = document.getElementById('repair-updated-at');
     if (statusBadge) statusBadge.outerHTML = RepairPlanUi.statusBadge(detail.status_label);
     if (priorityBadge) priorityBadge.outerHTML = RepairPlanUi.priorityBadge(detail.priority_label);
-    if (assigneeValue) assigneeValue.textContent = detail.assigned_to || 'Määramata';
+    if (assigneeValue) assigneeValue.innerHTML = RepairPlanUi.assigneeLabel(detail.assigned_to, detail.assigned_to_specialty);
+    const trackValue = document.getElementById('repair-track-value');
+    if (trackValue) trackValue.innerHTML = RepairPlanUi.trackBadge(detail.repair_track_label);
     if (updatedAt) updatedAt.textContent = new Date(detail.updated_at).toLocaleString('et-EE');
   }
 

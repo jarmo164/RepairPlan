@@ -172,3 +172,22 @@ body {
 .input-group .btn {
   white-space: nowrap;
 }
+
+.repair-track-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(111, 66, 193, 0.12);
+  color: #5a32a3;
+  border: 1px solid rgba(111, 66, 193, 0.25);
+}
+
+.electronics-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #5a32a3;
+}
+
+.repair-row--electronics {
+  background: rgba(111, 66, 193, 0.045);
+}
