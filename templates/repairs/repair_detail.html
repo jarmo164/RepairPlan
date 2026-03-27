@@ -9,7 +9,7 @@
   <div class="page-header__actions">
     <a class="btn btn-outline-secondary" href="{% url 'repairs:repair-list' %}">Tagasi nimekirja</a>
     {% if action_flags.can_edit %}
-      <a class="btn btn-primary" href="{% url 'repairs:repair-update' repair.id %}">Muuda</a>
+      <a class="btn btn-primary" href="{% url 'repairs:repair-update' repair.id %}">Muuda kirjet</a>
     {% endif %}
   </div>
 </div>
@@ -79,7 +79,7 @@
           <label class="form-label small text-body-secondary">Määra või muuda parandajat</label>
           <div class="input-group input-group-sm">
             <select class="form-select" id="assign-select"></select>
-            <button class="btn btn-outline-primary" type="button" id="assign-submit">Salvesta</button>
+            <button class="btn btn-outline-primary" type="button" id="assign-submit">Salvesta määramine</button>
           </div>
         </div>
         {% endif %}
@@ -89,7 +89,7 @@
           <label class="form-label small text-body-secondary">Muuda prioriteeti</label>
           <div class="input-group input-group-sm">
             <select class="form-select" id="priority-select"></select>
-            <button class="btn btn-outline-primary" type="button" id="priority-submit">Salvesta</button>
+            <button class="btn btn-outline-primary" type="button" id="priority-submit">Salvesta prioriteet</button>
           </div>
         </div>
         {% endif %}

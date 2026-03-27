@@ -8,8 +8,8 @@
   </div>
   <div class="page-header__actions">
     <a class="btn btn-primary" href="{% url 'repairs:repair-create' %}">Lisa parandus</a>
-    <button class="btn btn-outline-secondary" type="button" id="reset-filters-btn">Lähtesta filtrid</button>
     <a class="btn btn-outline-success" id="export-repairs-link" href="/api/repairs/export/">Ekspordi CSV</a>
+    <button class="btn btn-outline-secondary" type="button" id="reset-filters-btn">Lähtesta filtrid</button>
   </div>
 </div>
 
@@ -53,7 +53,7 @@
 <div class="card mb-4 section-card">
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <span>Filtrid</span>
-    <span class="small text-body-secondary">Kasuta filtreid, et leida kiiresti tähelepanu vajavad tööd. Otsing rakendub kirjutamisel.</span>
+    <span class="small text-body-secondary" id="filter-state-hint">Kasuta filtreid, et leida kiiresti tähelepanu vajavad tööd. Otsing rakendub kirjutamisel.</span>
   </div>
   <div class="card-body">
     <form id="repairs-filter-form" class="row g-3">
@@ -139,6 +139,7 @@
   const exportLink = document.getElementById('export-repairs-link');
   const feedback = document.getElementById('repairs-feedback');
   const resetBtn = document.getElementById('reset-filters-btn');
+  const filterStateHint = document.getElementById('filter-state-hint');
   let currentPage = 1;
 
   function showFeedback(message, type = 'success') {
@@ -161,6 +162,11 @@
     if (repair.priority === 'HIGH') return 'repair-row repair-row--high';
     if (!repair.assigned_to) return 'repair-row repair-row--unassigned';
     return 'repair-row';
+  }
+
+  function updateFilterHint(params) {
+    const active = Array.from(params.entries()).filter(([_, value]) => value).length;
+    filterStateHint.textContent = active ? `Aktiivseid filtreid: ${active}` : 'Kasuta filtreid, et leida kiiresti tähelepanu vajavad tööd. Otsing rakendub kirjutamisel.';
   }
 
   function renderRows(items) {
@@ -192,6 +198,7 @@
   async function loadPage(page = 1) {
     currentPage = page;
     const params = new URLSearchParams(new FormData(form));
+    updateFilterHint(params);
     exportLink.href = `/api/repairs/export/?${params.toString()}`;
     params.set('page', String(page));
     params.set('ordering', '-created_at');

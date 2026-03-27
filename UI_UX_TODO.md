@@ -183,11 +183,11 @@ Dashboard peab aitama juhil/meistril kohe näha:
 
 ---
 
-# 7. Mikro-UX parandused (osaliselt tehtud)
+# 7. Mikro-UX parandused ✅
 
 - [x] Lisada aktiivse lehe visuaalne indikaator navigatsioonis
 - [x] Lisada selgemad success/error sõnumid async tegevustele
-- [ ] Lisada “Tühista” ja “Tagasi” nupud järjekindla loogikaga
+- [x] Lisada “Tühista” ja “Tagasi” nupud järjekindla loogikaga
 - [x] Lisada vormides selgem veasõnumite kujundus
 - [x] Kontrollida nuppude järjestust: primaarne enne, sekundaarsed pärast
 - [x] Lisada detailvaates ja listis parem visuaalne kontrast oluliste badge’ide jaoks
@@ -212,8 +212,8 @@ Dashboard peab aitama juhil/meistril kohe näha:
 - [x] dashboardi tähelepanu-tsoonid
 - [x] workload visualiseerimine
 
-## Etapp 4 – Polishing (osaliselt tehtud)
-- [ ] mikro-UX
+## Etapp 4 – Polishing ✅
+- [x] mikro-UX
 - [x] spacing
 - [x] badge consistency
 - [x] empty states
@@ -234,4 +234,4 @@ See UX/UI pakett on valmis siis, kui:
 # 10. Audit update
 
 Pärast uut täis-UI auditit on punktid 1–6 hinnatud sisuliselt tehtuks.
-Punkt 7 on märgitud osaliselt tehtuks, sest mikro-UX on selgelt parem, kuid mõned viimased järjekindluse/detaili lihvid on veel võimalikud.
+Punkt 7 on nüüd märgitud tehtuks: mikro-UX viimased järjekindluse ja tagasiside detailid viidi samuti lõpuni.

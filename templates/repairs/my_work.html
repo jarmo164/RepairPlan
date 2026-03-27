@@ -131,17 +131,24 @@
         <div class="input-group input-group-sm">
           <input type="text" class="form-control" name="comment" placeholder="Lisa kommentaar…">
           <button class="btn btn-outline-primary" type="button">Salvesta</button>
+          <button class="btn btn-outline-secondary" type="button" data-cancel-comment>Loobu</button>
         </div>
       </div>
     `;
     const toggleBtn = wrapper.children[0];
     const panel = wrapper.children[1];
     const input = panel.querySelector('input[name="comment"]');
-    const submit = panel.querySelector('button');
+    const submit = panel.querySelector('button.btn-outline-primary');
+    const cancel = panel.querySelector('[data-cancel-comment]');
 
     toggleBtn.addEventListener('click', () => {
       panel.classList.toggle('d-none');
       if (!panel.classList.contains('d-none')) input.focus();
+    });
+
+    cancel.addEventListener('click', () => {
+      input.value = '';
+      panel.classList.add('d-none');
     });
 
     submit.addEventListener('click', async () => {
