@@ -28,9 +28,11 @@ from .permissions import (
     is_repairer,
 )
 from .selectors import (
+    dashboard_high_priority_open_repairs_for,
     dashboard_oldest_open_repairs_for,
     dashboard_repair_counts_by_repairer,
     dashboard_summary_for,
+    dashboard_unassigned_repairs_for,
     repair_list_summary_for,
     filter_repairs_for_user,
     my_work_for,
@@ -355,10 +357,14 @@ class DashboardSummaryApiView(APIView):
 
     def get(self, request):
         oldest = RepairListSerializer(dashboard_oldest_open_repairs_for(request.user), many=True).data
+        high_priority_open = RepairListSerializer(dashboard_high_priority_open_repairs_for(request.user), many=True).data
+        unassigned_open = RepairListSerializer(dashboard_unassigned_repairs_for(request.user), many=True).data
         return Response(
             {
                 **dashboard_summary_for(request.user),
                 'oldest_open': oldest,
+                'high_priority_open': high_priority_open,
+                'unassigned_open': unassigned_open,
                 'by_repairer': dashboard_repair_counts_by_repairer(request.user),
             }
         )

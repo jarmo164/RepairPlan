@@ -66,11 +66,30 @@ def dashboard_summary_for(user):
         'in_progress': qs.filter(status=Repair.Status.IN_PROGRESS).count(),
         'completed': qs.filter(status=Repair.Status.COMPLETED).count(),
         'high_priority': qs.filter(priority=Repair.Priority.HIGH).count(),
+        'unassigned': qs.filter(assigned_to__isnull=True).count(),
     }
 
 
 def dashboard_oldest_open_repairs_for(user, limit=5):
     return repairs_visible_to(user).exclude(status__in=[Repair.Status.COMPLETED, Repair.Status.RETURNED]).order_by('created_at')[:limit]
+
+
+def dashboard_high_priority_open_repairs_for(user, limit=5):
+    return (
+        repairs_visible_to(user)
+        .filter(priority=Repair.Priority.HIGH)
+        .exclude(status__in=[Repair.Status.COMPLETED, Repair.Status.RETURNED])
+        .order_by('created_at')[:limit]
+    )
+
+
+def dashboard_unassigned_repairs_for(user, limit=5):
+    return (
+        repairs_visible_to(user)
+        .filter(assigned_to__isnull=True)
+        .exclude(status__in=[Repair.Status.COMPLETED, Repair.Status.RETURNED])
+        .order_by('created_at')[:limit]
+    )
 
 
 def dashboard_repair_counts_by_repairer(user):
