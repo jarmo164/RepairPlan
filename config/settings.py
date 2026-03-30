@@ -1,11 +1,25 @@
 import os
+import socket
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-key-replace-in-production')
 DEBUG = os.getenv('DJANGO_DEBUG', '1') in {'1', 'true', 'True'}
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
+allowed_hosts_env = os.getenv('DJANGO_ALLOWED_HOSTS')
+ALLOWED_HOSTS = [host.strip() for host in (allowed_hosts_env or '127.0.0.1,localhost').split(',') if host.strip()]
+
+if DEBUG and not allowed_hosts_env:
+    ALLOWED_HOSTS = ['*']
+elif DEBUG:
+    debug_hosts = {'127.0.0.1', 'localhost', '0.0.0.0'}
+    try:
+        debug_hosts.update(socket.gethostbyname_ex(socket.gethostname())[2])
+    except OSError:
+        pass
+    for host in debug_hosts:
+        if host and host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
