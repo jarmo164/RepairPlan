@@ -56,6 +56,13 @@
     <span class="small text-body-secondary" id="filter-state-hint">Kasuta filtreid, et leida kiiresti tähelepanu vajavad tööd. Otsing rakendub kirjutamisel.</span>
   </div>
   <div class="card-body">
+    <div class="d-flex flex-wrap gap-2 mb-3" id="quick-filter-bar">
+      <button class="btn btn-sm btn-outline-secondary quick-filter-btn" type="button" data-quick-filter="all">Kõik aktiivsed</button>
+      <button class="btn btn-sm btn-outline-secondary quick-filter-btn" type="button" data-quick-filter="unassigned">Määramata</button>
+      <button class="btn btn-sm btn-outline-secondary quick-filter-btn" type="button" data-quick-filter="high">Kõrge prioriteet</button>
+      <button class="btn btn-sm btn-outline-secondary quick-filter-btn" type="button" data-quick-filter="electronics">Elektroonika</button>
+      <button class="btn btn-sm btn-outline-secondary quick-filter-btn" type="button" data-quick-filter="returned">Tagastatud</button>
+    </div>
     <form id="repairs-filter-form" class="row g-3">
       <div class="col-md-4">
         <label class="form-label">Tootekoodi otsing</label>
@@ -84,6 +91,15 @@
         <select class="form-select" name="priority">
           <option value="">Kõik</option>
           {% for value, label in priority_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Rada</label>
+        <select class="form-select" name="repair_track">
+          <option value="">Kõik</option>
+          {% for value, label in track_choices %}
             <option value="{{ value }}">{{ label }}</option>
           {% endfor %}
         </select>
@@ -142,6 +158,7 @@
   const feedback = document.getElementById('repairs-feedback');
   const resetBtn = document.getElementById('reset-filters-btn');
   const filterStateHint = document.getElementById('filter-state-hint');
+  const quickFilterButtons = Array.from(document.querySelectorAll('.quick-filter-btn'));
   let currentPage = 1;
 
   function showFeedback(message, type = 'success') {
@@ -169,6 +186,52 @@
   function updateFilterHint(params) {
     const active = Array.from(params.entries()).filter(([_, value]) => value).length;
     filterStateHint.textContent = active ? `Aktiivseid filtreid: ${active}` : 'Kasuta filtreid, et leida kiiresti tähelepanu vajavad tööd. Otsing rakendub kirjutamisel.';
+  }
+
+  function setQuickFilterState(params) {
+    const state = {
+      returned: params.get('status') === 'RETURNED',
+      unassigned: params.get('unassigned_only') === '1',
+      high: params.get('priority') === 'HIGH' && !params.get('status'),
+      electronics: params.get('repair_track') === 'ELECTRONICS' && !params.get('status'),
+      all: !params.get('status') && !params.get('priority') && !params.get('repair_track') && !params.get('assigned_to') && params.get('unassigned_only') !== '1',
+    };
+
+    quickFilterButtons.forEach((btn) => {
+      const key = btn.dataset.quickFilter;
+      btn.classList.toggle('btn-secondary', !!state[key]);
+      btn.classList.toggle('btn-outline-secondary', !state[key]);
+    });
+  }
+
+  function applyQuickFilter(kind) {
+    const statusField = form.querySelector('[name="status"]');
+    const priorityField = form.querySelector('[name="priority"]');
+    const trackField = form.querySelector('[name="repair_track"]');
+    let unassignedField = form.querySelector('[name="unassigned_only"]');
+    if (!unassignedField) {
+      unassignedField = document.createElement('input');
+      unassignedField.type = 'hidden';
+      unassignedField.name = 'unassigned_only';
+      form.appendChild(unassignedField);
+    }
+
+    statusField.value = '';
+    priorityField.value = '';
+    trackField.value = '';
+    unassignedField.value = '';
+
+    if (kind === 'unassigned') {
+      unassignedField.value = '1';
+    } else if (kind === 'high') {
+      priorityField.value = 'HIGH';
+    } else if (kind === 'electronics') {
+      trackField.value = 'ELECTRONICS';
+    } else if (kind === 'returned') {
+      statusField.value = 'RETURNED';
+    }
+
+    loadPage(1);
   }
 
   function renderRows(items) {
@@ -201,6 +264,7 @@
     currentPage = page;
     const params = new URLSearchParams(new FormData(form));
     updateFilterHint(params);
+    setQuickFilterState(params);
     exportLink.href = `/api/repairs/export/?${params.toString()}`;
     params.set('page', String(page));
     params.set('ordering', '-created_at');
@@ -224,8 +288,14 @@
 
   resetBtn.addEventListener('click', async () => {
     form.reset();
+    const unassignedField = form.querySelector('[name="unassigned_only"]');
+    if (unassignedField) unassignedField.value = '';
     await loadPage(1);
     showFeedback('Filtrid lähtestatud.');
+  });
+
+  quickFilterButtons.forEach((btn) => {
+    btn.addEventListener('click', () => applyQuickFilter(btn.dataset.quickFilter));
   });
 
   const searchInput = form.querySelector('input[name="search"]');

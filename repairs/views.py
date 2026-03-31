@@ -203,6 +203,7 @@ class RepairListView(LoginRequiredMixin, View):
             'departments': Department.objects.filter(is_active=True),
             'status_choices': Repair.Status.choices,
             'priority_choices': Repair.Priority.choices,
+            'track_choices': Repair.Track.choices,
             'search': request.GET.get('search', ''),
             'filters': request.GET,
             'list_summary': repair_list_summary_for(request.user),

@@ -32,6 +32,30 @@ class RepairApiTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('total', response.json())
 
+    def test_repairs_api_hides_returned_by_default(self):
+        change_status(repair=self.repair, status=Repair.Status.RETURNED, changed_by=self.master)
+        response = self.client.get(reverse('repairs:api-repairs'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['pagination']['count'], 0)
+
+    def test_repairs_api_can_filter_returned(self):
+        change_status(repair=self.repair, status=Repair.Status.RETURNED, changed_by=self.master)
+        response = self.client.get(reverse('repairs:api-repairs'), {'status': Repair.Status.RETURNED})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['pagination']['count'], 1)
+
+    def test_repairs_api_can_filter_by_track(self):
+        self.repair.repair_track = Repair.Track.ELECTRONICS
+        self.repair.save(update_fields=['repair_track'])
+        response = self.client.get(reverse('repairs:api-repairs'), {'repair_track': Repair.Track.ELECTRONICS})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['pagination']['count'], 1)
+
+    def test_repairs_api_can_filter_unassigned(self):
+        response = self.client.get(reverse('repairs:api-repairs'), {'unassigned_only': '1'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['pagination']['count'], 1)
+
     def test_export_returns_csv(self):
         response = self.client.get(reverse('repairs:api-repairs-export'))
         self.assertEqual(response.status_code, 200)

@@ -51,9 +51,17 @@ def filter_repairs_for_user(user, params=None):
     if priority:
         qs = qs.filter(priority=priority)
 
+    repair_track = params.get('repair_track')
+    if repair_track:
+        qs = qs.filter(repair_track=repair_track)
+
     assigned_to = params.get('assigned_to')
     if assigned_to:
         qs = qs.filter(assigned_to_id=assigned_to)
+
+    unassigned_only = str(params.get('unassigned_only') or '').lower() in {'1', 'true', 'yes', 'on'}
+    if unassigned_only:
+        qs = qs.filter(assigned_to__isnull=True)
 
     ordering = params.get('ordering') or '-created_at'
     allowed_ordering = {'created_at', '-created_at', 'priority', '-priority', 'status', '-status'}
