@@ -44,6 +44,7 @@ from .selectors import (
 )
 from .serializers import (
     RepairAssignSerializer,
+    RepairBulkActionSerializer,
     RepairCommentSerializer,
     RepairCombinedActionSerializer,
     RepairCreateSerializer,
@@ -204,6 +205,12 @@ class RepairListView(LoginRequiredMixin, View):
             'status_choices': Repair.Status.choices,
             'priority_choices': Repair.Priority.choices,
             'track_choices': Repair.Track.choices,
+            'assignee_choices_json': json.dumps(
+                [
+                    {'id': user.id, 'label': user.get_username()}
+                    for user in get_user_model().objects.filter(is_active=True).order_by('username')
+                ]
+            ),
             'search': request.GET.get('search', ''),
             'filters': request.GET,
             'list_summary': repair_list_summary_for(request.user),
@@ -525,6 +532,45 @@ class RepairCombinedActionApiView(APIView):
             return Response({'detail': exc.message}, status=status.HTTP_403_FORBIDDEN)
 
         return Response(RepairDetailSerializer(repair).data)
+
+
+class RepairBulkUpdateApiView(APIView):
+    permission_classes = [RepairApiPermission]
+
+    def post(self, request):
+        serializer = RepairBulkActionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        repair_ids = serializer.validated_data['repair_ids']
+        repairs = list(repairs_visible_to(request.user).filter(pk__in=repair_ids))
+        if not repairs:
+            return Response({'detail': 'Ühtegi sobivat parandust ei leitud.'}, status=status.HTTP_404_NOT_FOUND)
+
+        found_ids = {repair.pk for repair in repairs}
+        missing_ids = [repair_id for repair_id in repair_ids if repair_id not in found_ids]
+        if missing_ids:
+            return Response({'detail': f'Ligipääs puudub või kirjeid ei leitud: {missing_ids}'}, status=status.HTTP_403_FORBIDDEN)
+
+        assigned_to = None
+        if 'assigned_to' in serializer.validated_data:
+            assigned_to_id = serializer.validated_data.get('assigned_to')
+            if assigned_to_id:
+                assigned_to = get_object_or_404(get_user_model(), pk=assigned_to_id)
+
+        updated = []
+        for repair in repairs:
+            if 'assigned_to' in serializer.validated_data:
+                assign_repair(repair=repair, assigned_to=assigned_to, changed_by=request.user)
+                repair.refresh_from_db()
+            if 'priority' in serializer.validated_data:
+                change_priority(repair=repair, priority=serializer.validated_data['priority'], changed_by=request.user)
+                repair.refresh_from_db()
+            if 'status' in serializer.validated_data:
+                change_status(repair=repair, status=serializer.validated_data['status'], changed_by=request.user)
+                repair.refresh_from_db()
+            updated.append(repair)
+
+        return Response({'updated_count': len(updated), 'results': RepairListSerializer(updated, many=True).data})
 
 
 class RepairCommentsApiView(APIView):

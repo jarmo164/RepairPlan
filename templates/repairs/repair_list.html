@@ -50,6 +50,44 @@
 
 <div id="repairs-feedback" class="mb-3"></div>
 
+<div class="card section-card mb-4">
+  <div class="card-body py-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Valitud read</label>
+        <div class="small text-body-secondary" id="bulk-selection-count">0 valitud</div>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Parandaja</label>
+        <select class="form-select form-select-sm" id="bulk-assigned-to">
+          <option value="">—</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Staatus</label>
+        <select class="form-select form-select-sm" id="bulk-status">
+          <option value="">—</option>
+          {% for value, label in status_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Prioriteet</label>
+        <select class="form-select form-select-sm" id="bulk-priority">
+          <option value="">—</option>
+          {% for value, label in priority_choices %}
+            <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2 d-grid">
+        <button class="btn btn-primary btn-sm" type="button" id="bulk-apply-btn" disabled>Rakenda valitutele</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="card mb-4 section-card">
   <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <span>Filtrid</span>
@@ -120,6 +158,7 @@
     <table class="table align-middle mb-0" id="repairs-list-table">
       <thead>
         <tr>
+          <th><input class="form-check-input" type="checkbox" id="select-all-repairs"></th>
           <th>ID</th>
           <th>Tootekood</th>
           <th>Kogus</th>
@@ -133,7 +172,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td colspan="8" class="text-center text-body-secondary py-4">Laen nimekirja…</td></tr>
+        <tr><td colspan="11" class="text-center text-body-secondary py-4">Laen nimekirja…</td></tr>
       </tbody>
     </table>
   </div>
@@ -159,7 +198,15 @@
   const resetBtn = document.getElementById('reset-filters-btn');
   const filterStateHint = document.getElementById('filter-state-hint');
   const quickFilterButtons = Array.from(document.querySelectorAll('.quick-filter-btn'));
+  const selectAllCheckbox = document.getElementById('select-all-repairs');
+  const bulkSelectionCount = document.getElementById('bulk-selection-count');
+  const bulkAssignedTo = document.getElementById('bulk-assigned-to');
+  const bulkStatus = document.getElementById('bulk-status');
+  const bulkPriority = document.getElementById('bulk-priority');
+  const bulkApplyBtn = document.getElementById('bulk-apply-btn');
+  const assigneeChoices = {{ assignee_choices_json|safe }};
   let currentPage = 1;
+  let selectedRepairIds = new Set();
 
   function showFeedback(message, type = 'success') {
     feedback.innerHTML = RepairPlanUi.feedback(message, type);
@@ -234,23 +281,38 @@
     loadPage(1);
   }
 
+  function updateBulkState() {
+    bulkSelectionCount.textContent = `${selectedRepairIds.size} valitud`;
+    bulkApplyBtn.disabled = selectedRepairIds.size === 0;
+    const pageCheckboxes = Array.from(document.querySelectorAll('.repair-select-checkbox'));
+    if (selectAllCheckbox) {
+      selectAllCheckbox.checked = pageCheckboxes.length > 0 && pageCheckboxes.every((el) => el.checked);
+      selectAllCheckbox.indeterminate = pageCheckboxes.some((el) => el.checked) && !selectAllCheckbox.checked;
+    }
+  }
+
   function renderRows(items) {
     if (!items.length) {
-      tbody.innerHTML = RepairPlanUi.emptyState('Kirjeid ei leitud.', 10);
+      tbody.innerHTML = RepairPlanUi.emptyState('Kirjeid ei leitud.', 11);
       updateSummary([]);
+      updateBulkState();
       return;
     }
     updateSummary(items);
     tbody.innerHTML = items.map((repair) => {
       const attention = !repair.assigned_to ? '<span class="small text-warning-emphasis d-block">Vajab määramist</span>' : '';
+      const checked = selectedRepairIds.has(repair.id) ? 'checked' : '';
       return `
       <tr class="${rowClass(repair)}">
+        <td><input class="form-check-input repair-select-checkbox" type="checkbox" value="${repair.id}" ${checked}></td>
         <td><a href="/repairs/${repair.id}/">#${repair.id}</a></td>
         <td>
           <div class="fw-semibold">${repair.product_code}</div>
           ${attention}
         </td>
+        <td>${repair.quantity}</td>
         <td><span class="text-body-secondary">${repair.client_or_group}</span></td>
+        <td>${RepairPlanUi.trackBadge(repair.repair_track_label)}</td>
         <td>${repair.department}</td>
         <td>${RepairPlanUi.statusBadge(repair.status_label)}</td>
         <td>${RepairPlanUi.priorityBadge(repair.priority_label)}</td>
@@ -258,6 +320,41 @@
         <td>${new Date(repair.created_at).toLocaleString('et-EE')}</td>
       </tr>`;
     }).join('');
+
+    Array.from(document.querySelectorAll('.repair-select-checkbox')).forEach((checkbox) => {
+      checkbox.addEventListener('change', () => {
+        const repairId = Number(checkbox.value);
+        if (checkbox.checked) selectedRepairIds.add(repairId);
+        else selectedRepairIds.delete(repairId);
+        updateBulkState();
+      });
+    });
+
+    updateBulkState();
+  }
+
+  async function applyBulkUpdate() {
+    const payload = { repair_ids: Array.from(selectedRepairIds) };
+    if (bulkAssignedTo.value) payload.assigned_to = Number(bulkAssignedTo.value);
+    if (bulkStatus.value) payload.status = bulkStatus.value;
+    if (bulkPriority.value) payload.priority = bulkPriority.value;
+
+    if (!payload.assigned_to && !payload.status && !payload.priority) {
+      showFeedback('Vali vähemalt üks bulk tegevus.', 'danger');
+      return;
+    }
+
+    try {
+      const result = await RepairPlanApi.post('/api/repairs/bulk-update/', payload);
+      selectedRepairIds.clear();
+      bulkAssignedTo.value = '';
+      bulkStatus.value = '';
+      bulkPriority.value = '';
+      await loadPage(currentPage);
+      showFeedback(`Uuendatud: ${result.updated_count} parandust.`);
+    } catch (error) {
+      showFeedback(error.message, 'danger');
+    }
   }
 
   async function loadPage(page = 1) {
@@ -275,7 +372,7 @@
       prevBtn.disabled = !data.pagination.has_previous;
       nextBtn.disabled = !data.pagination.has_next;
     } catch (error) {
-      tbody.innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">${error.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">${error.message}</td></tr>`;
       showFeedback(error.message, 'danger');
     }
   }
@@ -293,6 +390,22 @@
     await loadPage(1);
     showFeedback('Filtrid lähtestatud.');
   });
+
+  bulkAssignedTo.innerHTML = ['<option value="">—</option>', ...assigneeChoices.map((item) => `<option value="${item.id}">${item.label}</option>`)].join('');
+
+  if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', () => {
+      Array.from(document.querySelectorAll('.repair-select-checkbox')).forEach((checkbox) => {
+        checkbox.checked = selectAllCheckbox.checked;
+        const repairId = Number(checkbox.value);
+        if (checkbox.checked) selectedRepairIds.add(repairId);
+        else selectedRepairIds.delete(repairId);
+      });
+      updateBulkState();
+    });
+  }
+
+  bulkApplyBtn.addEventListener('click', applyBulkUpdate);
 
   quickFilterButtons.forEach((btn) => {
     btn.addEventListener('click', () => applyQuickFilter(btn.dataset.quickFilter));

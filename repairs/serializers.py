@@ -108,3 +108,15 @@ class RepairCombinedActionSerializer(serializers.Serializer):
     priority = serializers.ChoiceField(choices=Repair.Priority.choices, required=False)
     status = serializers.ChoiceField(choices=Repair.Status.choices, required=False)
     comment = serializers.CharField(required=False, allow_blank=True)
+
+
+class RepairBulkActionSerializer(serializers.Serializer):
+    repair_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), allow_empty=False)
+    assigned_to = serializers.IntegerField(allow_null=True, required=False)
+    priority = serializers.ChoiceField(choices=Repair.Priority.choices, required=False)
+    status = serializers.ChoiceField(choices=Repair.Status.choices, required=False)
+
+    def validate(self, attrs):
+        if not any(key in attrs for key in ('assigned_to', 'priority', 'status')):
+            raise serializers.ValidationError('Vali vähemalt üks bulk tegevus.')
+        return attrs
