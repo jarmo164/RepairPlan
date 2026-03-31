@@ -2,24 +2,7 @@ from django.core.exceptions import ValidationError
 
 from .models import Repair, RepairComment, RepairStatusLog
 from .notifications import send_assignment_notification, send_status_change_notification
-from .permissions import can_assign_repairs, can_change_priority, can_change_status, can_comment_on_repair, can_create_repairs, is_repair_master
-
-ALLOWED_STATUS_TRANSITIONS = {
-    Repair.Status.NOT_STARTED: {Repair.Status.REVIEWED},
-    Repair.Status.REVIEWED: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.IN_PROGRESS, Repair.Status.RETURNED},
-    Repair.Status.ELECTRONICS_REPAIR: {Repair.Status.IN_PROGRESS, Repair.Status.ON_HOLD, Repair.Status.COMPLETED, Repair.Status.RETURNED},
-    Repair.Status.IN_PROGRESS: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.ON_HOLD, Repair.Status.COMPLETED, Repair.Status.RETURNED},
-    Repair.Status.ON_HOLD: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.IN_PROGRESS},
-    Repair.Status.COMPLETED: set(),
-    Repair.Status.RETURNED: set(),
-}
-
-REPAIRER_ALLOWED_STATUS_TRANSITIONS = {
-    Repair.Status.REVIEWED: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.IN_PROGRESS},
-    Repair.Status.ELECTRONICS_REPAIR: {Repair.Status.IN_PROGRESS, Repair.Status.ON_HOLD, Repair.Status.COMPLETED},
-    Repair.Status.IN_PROGRESS: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.ON_HOLD, Repair.Status.COMPLETED},
-    Repair.Status.ON_HOLD: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.IN_PROGRESS},
-}
+from .permissions import can_assign_repairs, can_change_priority, can_change_status, can_comment_on_repair, can_create_repairs
 
 
 def log_change(*, repair, changed_by, field_name, old_value, new_value):
@@ -33,27 +16,15 @@ def log_change(*, repair, changed_by, field_name, old_value, new_value):
 
 
 def validate_status_transition(*, repair, status, changed_by):
-    current = repair.status
     own_assigned = repair.assigned_to_id == changed_by.id
 
     if not can_change_status(changed_by, own_assigned_only=own_assigned):
         raise ValidationError('Sul puudub õigus staatust muuta.')
 
-    if status == current:
-        return
+    if own_assigned and status == Repair.Status.RETURNED:
+        raise ValidationError('Parandaja ei saa tööd ise tagastatuks märkida.')
 
-    if is_repair_master(changed_by) or changed_by.is_superuser:
-        allowed = ALLOWED_STATUS_TRANSITIONS.get(current, set())
-    elif own_assigned:
-        allowed = REPAIRER_ALLOWED_STATUS_TRANSITIONS.get(current, set())
-    else:
-        allowed = set()
-
-    if status not in allowed:
-        raise ValidationError(
-            f'Lubamatu staatuse üleminek: {current} -> {status}. '
-            f'Lubatud: {", ".join(sorted(allowed)) or "puuduvad"}.'
-        )
+    return
 
 
 def create_repair(*, created_by, **data):

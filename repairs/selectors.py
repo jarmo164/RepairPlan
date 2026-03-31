@@ -4,6 +4,15 @@ from .models import Repair
 from .permissions import is_administrator, is_department_manager, is_repair_master, is_repairer
 
 
+def hide_returned_by_default(queryset, params=None):
+    params = params or {}
+    include_returned = str(params.get('include_returned') or '').lower() in {'1', 'true', 'yes', 'on'}
+    explicit_status = params.get('status')
+    if explicit_status or include_returned:
+        return queryset
+    return queryset.exclude(status=Repair.Status.RETURNED)
+
+
 def repairs_visible_to(user):
     qs = Repair.objects.select_related('department', 'created_by', 'assigned_to')
     if not user or not user.is_authenticated:
@@ -20,7 +29,7 @@ def repairs_visible_to(user):
 
 def filter_repairs_for_user(user, params=None):
     params = params or {}
-    qs = repairs_visible_to(user)
+    qs = hide_returned_by_default(repairs_visible_to(user), params)
 
     search = (params.get('search') or '').strip()
     if search:
@@ -55,11 +64,11 @@ def filter_repairs_for_user(user, params=None):
 
 
 def my_work_for(user):
-    return repairs_visible_to(user).filter(assigned_to=user)
+    return repairs_visible_to(user).exclude(status=Repair.Status.RETURNED).filter(assigned_to=user)
 
 
 def dashboard_summary_for(user):
-    qs = repairs_visible_to(user)
+    qs = repairs_visible_to(user).exclude(status=Repair.Status.RETURNED)
     return {
         'total': qs.count(),
         'not_started': qs.filter(status=Repair.Status.NOT_STARTED).count(),
@@ -111,7 +120,7 @@ def dashboard_repair_counts_by_repairer(user):
 
 
 def repair_list_summary_for(user):
-    qs = repairs_visible_to(user)
+    qs = repairs_visible_to(user).exclude(status=Repair.Status.RETURNED)
     return {
         'total': qs.count(),
         'high_priority': qs.filter(priority=Repair.Priority.HIGH).count(),
@@ -138,6 +147,7 @@ def repair_shelf_for(user):
 def dashboard_self_claimed_repairs_for(user, limit=10):
     return (
         repairs_visible_to(user)
+        .exclude(status=Repair.Status.RETURNED)
         .filter(status_logs__field_name='assignment_source', status_logs__new_value='SELF_CLAIMED')
         .distinct()
         .order_by('-updated_at')[:limit]
@@ -147,6 +157,7 @@ def dashboard_self_claimed_repairs_for(user, limit=10):
 def dashboard_weekend_self_claimed_repairs_for(user, limit=10):
     return (
         repairs_visible_to(user)
+        .exclude(status=Repair.Status.RETURNED)
         .filter(
             status_logs__field_name='assignment_source',
             status_logs__new_value='SELF_CLAIMED',
