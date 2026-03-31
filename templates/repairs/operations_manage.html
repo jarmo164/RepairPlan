@@ -1,76 +1,71 @@
 {% extends 'base.html' %}
 {% block title %}Meistri haldus · RepairPlan{% endblock %}
 {% block content %}
-<div class="page-header">
+<div class="page-header page-header--compact">
   <div>
     <h1 class="h3 page-header__title">Meistri haldus</h1>
-    <p class="page-header__subtitle">Halda töötajaid ja osakondi otse meistri vaatest. Admin-paneeli pole selleks vaja.</p>
   </div>
   <div class="page-header__actions">
-    <a class="btn btn-outline-secondary" href="{% url 'repairs:dashboard' %}">Tagasi dashboardi</a>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'repairs:dashboard' %}">Dashboard</a>
   </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-3">
   <div class="col-12">
-    <div class="card section-card">
-      <div class="card-header">Töötajate nimekiri</div>
+    <div class="card section-card section-card--compact">
+      <div class="card-header card-header--compact">Töötajad</div>
       <div class="table-responsive">
-        <table class="table align-middle mb-0">
+        <table class="table table-sm align-middle mb-0 operations-table operations-table--employees">
           <thead>
             <tr>
               <th>Kasutaja</th>
               <th>Osakond</th>
-              <th>Roll / staatus</th>
+              <th>Roll</th>
               <th>Telefon</th>
               <th>Märkmed</th>
-              <th></th>
+              <th class="text-end">&nbsp;</th>
             </tr>
           </thead>
           <tbody>
             {% for profile in user_profiles %}
             <tr>
-              <td colspan="6" class="p-0">
-                <form method="post" class="row g-2 align-items-center m-0 p-3 border-bottom">
-                  {% csrf_token %}
-                  <input type="hidden" name="action" value="save-profile">
-                  <input type="hidden" name="profile_id" value="{{ profile.id }}">
-                  <div class="col-lg-2">
-                    <div class="fw-semibold">{{ profile.user.username }}</div>
-                    <div class="small text-body-secondary">{{ profile.user.get_full_name|default:'Aktiivne kasutaja' }}</div>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save-profile">
+                <input type="hidden" name="profile_id" value="{{ profile.id }}">
+                <td>
+                  <div class="fw-semibold d-flex align-items-center gap-2">
+                    <span>{{ profile.user.username }}</span>
+                    {% if profile.specialty == 'ELECTRONICS' %}
+                    <span class="electronics-icon" title="Elektrooniline parandaja"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16h-11A2.5 2.5 0 0 1 4 13.5v-8Zm2.5-1A1.5 1.5 0 0 0 5 5.5v8A1.5 1.5 0 0 0 6.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 17.5 4.5h-11ZM6.5 18a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H7a.5.5 0 0 1-.5-.5Zm.766-8.142a.5.5 0 0 1 .702-.092l2.146 1.717 2.134-3.048a.5.5 0 0 1 .807.01l1.41 2.074 1.666-1.666a.5.5 0 1 1 .707.707l-2.09 2.09a.5.5 0 0 1-.777-.067l-1.289-1.897-2.091 2.987a.5.5 0 0 1-.729.105L7.358 10.56a.5.5 0 0 1-.092-.702Z"/></svg></span>
+                    {% endif %}
                   </div>
-                  <div class="col-lg-2">
-                    <select class="form-select form-select-sm" name="department">
-                      <option value="">—</option>
-                      {% for department in departments %}
-                      <option value="{{ department.id }}" {% if profile.department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                  <div class="col-lg-3">
-                    <select class="form-select form-select-sm" name="specialty">
-                      {% for value, label in specialty_choices %}
-                      <option value="{{ value }}" {% if profile.specialty == value %}selected{% endif %}>{{ label }}</option>
-                      {% endfor %}
-                    </select>
-                    <div class="small text-body-secondary mt-1 d-flex align-items-center gap-1">
-                      {% if profile.specialty == 'ELECTRONICS' %}
-                        <span class="electronics-icon" title="Elektrooniline parandaja"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16h-11A2.5 2.5 0 0 1 4 13.5v-8Zm2.5-1A1.5 1.5 0 0 0 5 5.5v8A1.5 1.5 0 0 0 6.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 17.5 4.5h-11ZM6.5 18a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H7a.5.5 0 0 1-.5-.5Zm.766-8.142a.5.5 0 0 1 .702-.092l2.146 1.717 2.134-3.048a.5.5 0 0 1 .807.01l1.41 2.074 1.666-1.666a.5.5 0 1 1 .707.707l-2.09 2.09a.5.5 0 0 1-.777-.067l-1.289-1.897-2.091 2.987a.5.5 0 0 1-.729.105L7.358 10.56a.5.5 0 0 1-.092-.702Z"/></svg></span>
-                      {% endif %}
-                      Elektroonikaparandajale kuvatakse süsteemis oscilloscope-ikoon.
-                    </div>
-                  </div>
-                  <div class="col-lg-2">
-                    <input class="form-control form-control-sm" type="text" name="phone" value="{{ profile.phone }}" placeholder="Telefon">
-                  </div>
-                  <div class="col-lg-2">
-                    <input class="form-control form-control-sm" type="text" name="notes" value="{{ profile.notes }}" placeholder="Märkmed">
-                  </div>
-                  <div class="col-lg-1 text-end">
-                    <button class="btn btn-sm btn-primary w-100" type="submit">Salvesta</button>
-                  </div>
-                </form>
-              </td>
+                </td>
+                <td>
+                  <select class="form-select form-select-sm" name="department">
+                    <option value="">—</option>
+                    {% for department in departments %}
+                    <option value="{{ department.id }}" {% if profile.department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <select class="form-select form-select-sm" name="specialty">
+                    {% for value, label in specialty_choices %}
+                    <option value="{{ value }}" {% if profile.specialty == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <input class="form-control form-control-sm" type="text" name="phone" value="{{ profile.phone }}" placeholder="Telefon">
+                </td>
+                <td>
+                  <input class="form-control form-control-sm" type="text" name="notes" value="{{ profile.notes }}" placeholder="Märkmed">
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-primary" type="submit">Salvesta</button>
+                </td>
+              </form>
             </tr>
             {% empty %}
             <tr><td colspan="6" class="text-center text-body-secondary py-4">Töötajaid ei leitud.</td></tr>
@@ -81,87 +76,74 @@
     </div>
   </div>
 
-  <div class="col-lg-6">
-    <div class="card section-card h-100">
-      <div class="card-header">Paranduste staatused</div>
-      <div class="card-body">
-        <div class="small text-body-secondary mb-3">Lisatud on uus tööseisu staatus: <strong>Elektrooniline parandus</strong>.</div>
-        <div class="list-group list-group-flush">
+  <div class="col-lg-5">
+    <div class="card section-card section-card--compact h-100">
+      <div class="card-header card-header--compact">Staatused</div>
+      <div class="card-body py-2">
+        <div class="d-flex flex-wrap gap-2">
           {% for value, label in status_choices %}
-          <div class="list-group-item d-flex justify-content-between align-items-center px-0">
-            <div>
-              <div class="fw-semibold">{{ label }}</div>
-              <div class="small text-body-secondary">Kood: {{ value }}</div>
-            </div>
+          <span class="badge rounded-pill text-bg-light border operations-chip {% if value == 'ELECTRONICS_REPAIR' %}operations-chip--accent{% endif %}">
             {% if value == 'ELECTRONICS_REPAIR' %}
-              <span class="badge repair-track-badge"><i class="bi bi-cpu"></i><span>UUS</span></span>
+            <span class="electronics-icon" title="Elektrooniline parandus"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16h-11A2.5 2.5 0 0 1 4 13.5v-8Zm2.5-1A1.5 1.5 0 0 0 5 5.5v8A1.5 1.5 0 0 0 6.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 17.5 4.5h-11ZM6.5 18a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H7a.5.5 0 0 1-.5-.5Zm.766-8.142a.5.5 0 0 1 .702-.092l2.146 1.717 2.134-3.048a.5.5 0 0 1 .807.01l1.41 2.074 1.666-1.666a.5.5 0 1 1 .707.707l-2.09 2.09a.5.5 0 0 1-.777-.067l-1.289-1.897-2.091 2.987a.5.5 0 0 1-.729.105L7.358 10.56a.5.5 0 0 1-.092-.702Z"/></svg></span>
             {% endif %}
-          </div>
+            {{ label }}
+          </span>
           {% endfor %}
         </div>
       </div>
     </div>
   </div>
 
-  <div class="col-lg-6">
-    <div class="card section-card h-100">
-      <div class="card-header">Osakonnad</div>
-      <div class="card-body">
-        <form method="post" class="row g-2 mb-4">
+  <div class="col-lg-7">
+    <div class="card section-card section-card--compact h-100">
+      <div class="card-header card-header--compact">Osakonnad</div>
+      <div class="card-body pt-2">
+        <form method="post" class="row g-2 mb-3 operations-inline-form">
           {% csrf_token %}
           <input type="hidden" name="action" value="create-department">
-          <div class="col-md-5">
-            <label class="form-label">Nimi</label>
-            {{ department_form.name }}
+          <div class="col-md-5">{{ department_form.name }}</div>
+          <div class="col-md-3">{{ department_form.code }}</div>
+          <div class="col-md-2 d-flex align-items-center">
+            <div class="form-check small mb-0">{{ department_form.is_active }}</div>
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Kood</label>
-            {{ department_form.code }}
-          </div>
-          <div class="col-md-2">
-            <label class="form-label">Aktiivne</label>
-            <div class="form-check pt-2">{{ department_form.is_active }}</div>
-          </div>
-          <div class="col-md-2 d-flex align-items-end">
-            <button class="btn btn-outline-primary w-100" type="submit">Lisa</button>
-          </div>
+          <div class="col-md-2"><button class="btn btn-outline-primary btn-sm w-100" type="submit">Lisa</button></div>
         </form>
 
         <div class="table-responsive">
-          <table class="table table-sm align-middle mb-0">
+          <table class="table table-sm align-middle mb-0 operations-table">
             <thead>
               <tr>
-                <th>Osakond</th>
+                <th>Nimi</th>
                 <th>Kood</th>
                 <th>Staatus</th>
-                <th></th>
+                <th class="text-end">&nbsp;</th>
               </tr>
             </thead>
             <tbody>
               {% for department in departments %}
               <tr>
                 <td colspan="4" class="p-0">
-                  <div class="row g-2 align-items-center m-0 p-2 border-bottom">
-                    <div class="col-md-4">
-                      <form method="post" class="row g-2 align-items-center">
+                  <div class="row g-2 align-items-center m-0 p-2 operations-row">
+                    <div class="col-md-8">
+                      <form method="post" class="row g-2">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="save-department">
                         <input type="hidden" name="department_id" value="{{ department.id }}">
-                        <div class="col-6"><input class="form-control form-control-sm" type="text" name="name" value="{{ department.name }}"></div>
-                        <div class="col-3"><input class="form-control form-control-sm" type="text" name="code" value="{{ department.code }}"></div>
-                        <div class="col-3 text-end"><button class="btn btn-sm btn-primary w-100" type="submit">Salvesta</button></div>
                         <input type="hidden" name="is_active" value="{% if department.is_active %}on{% endif %}">
+                        <div class="col-7"><input class="form-control form-control-sm" type="text" name="name" value="{{ department.name }}"></div>
+                        <div class="col-3"><input class="form-control form-control-sm" type="text" name="code" value="{{ department.code }}"></div>
+                        <div class="col-2"><button class="btn btn-sm btn-primary w-100" type="submit">OK</button></div>
                       </form>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                       {% if department.is_active %}<span class="badge text-bg-success">Aktiivne</span>{% else %}<span class="badge text-bg-secondary">Peatatud</span>{% endif %}
                     </div>
-                    <div class="col-md-4 text-end">
+                    <div class="col-md-2 text-end">
                       <form method="post">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="toggle-department">
                         <input type="hidden" name="department_id" value="{{ department.id }}">
-                        <button class="btn btn-sm btn-outline-secondary" type="submit">Vaheta aktiivsust</button>
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">Vaheta</button>
                       </form>
                     </div>
                   </div>
@@ -174,10 +156,6 @@
           </table>
         </div>
       </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
     </div>
   </div>
 </div>

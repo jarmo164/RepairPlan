@@ -191,3 +191,57 @@ body {
 .repair-row--electronics {
   background: rgba(111, 66, 193, 0.045);
 }
+
+.page-header--compact {
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.section-card--compact .card-header {
+  padding: 0.6rem 0.9rem;
+}
+
+.card-header--compact {
+  font-size: 0.95rem;
+}
+
+.operations-table th,
+.operations-table td {
+  padding: 0.55rem 0.65rem;
+  vertical-align: middle;
+}
+
+.operations-table thead th {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+.operations-table .form-control,
+.operations-table .form-select,
+.operations-inline-form .form-control,
+.operations-inline-form .form-select {
+  min-height: calc(1.5em + .5rem + 2px);
+}
+
+.operations-row {
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+.operations-chip {
+  font-weight: 500;
+  color: #495057;
+}
+
+.operations-chip--accent {
+  background: rgba(111, 66, 193, 0.12) !important;
+  color: #5a32a3;
+  border-color: rgba(111, 66, 193, 0.25) !important;
+}
+
+.operations-table--employees .btn,
+.operations-inline-form .btn {
+  white-space: nowrap;
+}
