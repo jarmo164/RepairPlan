@@ -50,14 +50,20 @@
 
 <div id="repairs-feedback" class="mb-3"></div>
 
-<div class="card section-card mb-4">
+<div class="card section-card mb-4 bulk-toolbar-card" id="bulk-toolbar-card">
   <div class="card-body py-3">
-    <div class="row g-2 align-items-end">
-      <div class="col-md-3">
-        <label class="form-label">Valitud read</label>
-        <div class="small text-body-secondary" id="bulk-selection-count">0 valitud</div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 bulk-toolbar-header">
+      <div>
+        <div class="small text-body-secondary">Bulk tegevused</div>
+        <div class="fw-semibold" id="bulk-selection-count">0 valitud</div>
       </div>
-      <div class="col-md-3">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-sm btn-outline-secondary" type="button" id="bulk-select-page-btn">Vali leht</button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" id="bulk-clear-btn">Tühjenda valik</button>
+      </div>
+    </div>
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3 d-none d-md-block">
         <label class="form-label">Parandaja</label>
         <select class="form-select form-select-sm" id="bulk-assigned-to">
           <option value="">—</option>
@@ -204,6 +210,9 @@
   const bulkStatus = document.getElementById('bulk-status');
   const bulkPriority = document.getElementById('bulk-priority');
   const bulkApplyBtn = document.getElementById('bulk-apply-btn');
+  const bulkSelectPageBtn = document.getElementById('bulk-select-page-btn');
+  const bulkClearBtn = document.getElementById('bulk-clear-btn');
+  const bulkToolbarCard = document.getElementById('bulk-toolbar-card');
   const assigneeChoices = {{ assignee_choices_json|safe }};
   let currentPage = 1;
   let selectedRepairIds = new Set();
@@ -284,7 +293,17 @@
   function updateBulkState() {
     bulkSelectionCount.textContent = `${selectedRepairIds.size} valitud`;
     bulkApplyBtn.disabled = selectedRepairIds.size === 0;
+    bulkToolbarCard.classList.toggle('bulk-toolbar-card--active', selectedRepairIds.size > 0);
+    if (bulkClearBtn) bulkClearBtn.disabled = selectedRepairIds.size === 0;
+
     const pageCheckboxes = Array.from(document.querySelectorAll('.repair-select-checkbox'));
+    const selectedOnPage = pageCheckboxes.filter((el) => el.checked).length;
+
+    if (bulkSelectPageBtn) {
+      bulkSelectPageBtn.disabled = pageCheckboxes.length === 0;
+      bulkSelectPageBtn.textContent = selectedOnPage === pageCheckboxes.length && pageCheckboxes.length > 0 ? 'Vali leht ✓' : 'Vali leht';
+    }
+
     if (selectAllCheckbox) {
       selectAllCheckbox.checked = pageCheckboxes.length > 0 && pageCheckboxes.every((el) => el.checked);
       selectAllCheckbox.indeterminate = pageCheckboxes.some((el) => el.checked) && !selectAllCheckbox.checked;
@@ -391,6 +410,26 @@
     showFeedback('Filtrid lähtestatud.');
   });
 
+  function selectCurrentPage() {
+    Array.from(document.querySelectorAll('.repair-select-checkbox')).forEach((checkbox) => {
+      checkbox.checked = true;
+      selectedRepairIds.add(Number(checkbox.value));
+    });
+    updateBulkState();
+  }
+
+  function clearSelection() {
+    selectedRepairIds.clear();
+    Array.from(document.querySelectorAll('.repair-select-checkbox')).forEach((checkbox) => {
+      checkbox.checked = false;
+    });
+    if (selectAllCheckbox) {
+      selectAllCheckbox.checked = false;
+      selectAllCheckbox.indeterminate = false;
+    }
+    updateBulkState();
+  }
+
   bulkAssignedTo.innerHTML = ['<option value="">—</option>', ...assigneeChoices.map((item) => `<option value="${item.id}">${item.label}</option>`)].join('');
 
   if (selectAllCheckbox) {
@@ -406,6 +445,8 @@
   }
 
   bulkApplyBtn.addEventListener('click', applyBulkUpdate);
+  if (bulkSelectPageBtn) bulkSelectPageBtn.addEventListener('click', selectCurrentPage);
+  if (bulkClearBtn) bulkClearBtn.addEventListener('click', clearSelection);
 
   quickFilterButtons.forEach((btn) => {
     btn.addEventListener('click', () => applyQuickFilter(btn.dataset.quickFilter));
