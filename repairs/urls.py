@@ -5,6 +5,7 @@ from .views import (
     DashboardView,
     HomeRedirectView,
     HealthcheckView,
+    OperationsManageView,
     MyWorkApiView,
     MyWorkView,
     RepairShelfApiView,
@@ -30,6 +31,7 @@ app_name = 'repairs'
 urlpatterns = [
     path('', HomeRedirectView.as_view(), name='home'),
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
+    path('dashboard/manage/', OperationsManageView.as_view(), name='operations-manage'),
     path('repairs/', RepairListView.as_view(), name='repair-list'),
     path('repairs/new/', RepairCreateView.as_view(), name='repair-create'),
     path('repairs/my-work/', MyWorkView.as_view(), name='my-work'),

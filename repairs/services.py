@@ -6,17 +6,19 @@ from .permissions import can_assign_repairs, can_change_priority, can_change_sta
 
 ALLOWED_STATUS_TRANSITIONS = {
     Repair.Status.NOT_STARTED: {Repair.Status.REVIEWED},
-    Repair.Status.REVIEWED: {Repair.Status.IN_PROGRESS, Repair.Status.RETURNED},
-    Repair.Status.IN_PROGRESS: {Repair.Status.ON_HOLD, Repair.Status.COMPLETED, Repair.Status.RETURNED},
-    Repair.Status.ON_HOLD: {Repair.Status.IN_PROGRESS},
+    Repair.Status.REVIEWED: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.IN_PROGRESS, Repair.Status.RETURNED},
+    Repair.Status.ELECTRONICS_REPAIR: {Repair.Status.IN_PROGRESS, Repair.Status.ON_HOLD, Repair.Status.COMPLETED, Repair.Status.RETURNED},
+    Repair.Status.IN_PROGRESS: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.ON_HOLD, Repair.Status.COMPLETED, Repair.Status.RETURNED},
+    Repair.Status.ON_HOLD: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.IN_PROGRESS},
     Repair.Status.COMPLETED: set(),
     Repair.Status.RETURNED: set(),
 }
 
 REPAIRER_ALLOWED_STATUS_TRANSITIONS = {
-    Repair.Status.REVIEWED: {Repair.Status.IN_PROGRESS},
-    Repair.Status.IN_PROGRESS: {Repair.Status.ON_HOLD, Repair.Status.COMPLETED},
-    Repair.Status.ON_HOLD: {Repair.Status.IN_PROGRESS},
+    Repair.Status.REVIEWED: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.IN_PROGRESS},
+    Repair.Status.ELECTRONICS_REPAIR: {Repair.Status.IN_PROGRESS, Repair.Status.ON_HOLD, Repair.Status.COMPLETED},
+    Repair.Status.IN_PROGRESS: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.ON_HOLD, Repair.Status.COMPLETED},
+    Repair.Status.ON_HOLD: {Repair.Status.ELECTRONICS_REPAIR, Repair.Status.IN_PROGRESS},
 }
 
 

@@ -2,6 +2,7 @@
   const STATUS_VARIANTS = {
     'Alustamata': 'secondary',
     'Üle vaadatud': 'info',
+    'Elektrooniline parandus': 'primary',
     'Töös': 'warning',
     'Ootel': 'dark',
     'Lõpetatud': 'success',

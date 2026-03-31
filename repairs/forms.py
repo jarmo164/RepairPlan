@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Repair, RepairComment
+from .models import Department, Repair, RepairComment, UserProfile
 
 BASE_INPUT_CLASS = 'form-control'
 BASE_SELECT_CLASS = 'form-select'
@@ -15,6 +15,8 @@ class StyledModelForm(forms.ModelForm):
                 css = BASE_INPUT_CLASS
             elif isinstance(widget, (forms.Select, forms.SelectMultiple)):
                 css = BASE_SELECT_CLASS
+            elif isinstance(widget, forms.CheckboxInput):
+                css = 'form-check-input'
             else:
                 css = BASE_INPUT_CLASS
             existing = widget.attrs.get('class', '')
@@ -63,4 +65,19 @@ class RepairCommentForm(StyledModelForm):
         fields = ['comment']
         widgets = {
             'comment': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Lisa kommentaar…'}),
+        }
+
+
+class DepartmentManageForm(StyledModelForm):
+    class Meta:
+        model = Department
+        fields = ['name', 'code', 'is_active']
+
+
+class UserProfileManageForm(StyledModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['department', 'specialty', 'phone', 'notes']
+        widgets = {
+            'notes': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Märkmed töötaja kohta…'}),
         }

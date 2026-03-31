@@ -12,8 +12,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .forms import RepairCommentForm, RepairCreateForm, RepairUpdateForm
-from .models import Department, Repair
+from .forms import DepartmentManageForm, RepairCommentForm, RepairCreateForm, RepairUpdateForm, UserProfileManageForm
+from .models import Department, Repair, UserProfile
 from .permissions import (
     DashboardAccessMixin,
     RepairApiPermission,
@@ -21,6 +21,7 @@ from .permissions import (
     can_change_priority,
     can_change_status,
     can_create_repairs,
+    can_view_dashboard,
     get_repair_action_flags,
     is_administrator,
     is_department_manager,
@@ -123,6 +124,74 @@ class DashboardView(DashboardAccessMixin, View):
 
     def get(self, request):
         return render(request, self.template_name, {'page_title': 'Dashboard', 'nav_key': 'dashboard', **build_navigation_context(request.user)})
+
+
+class OperationsManageView(LoginRequiredMixin, View):
+    template_name = 'repairs/operations_manage.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not can_view_dashboard(request.user):
+            messages.error(request, 'Sul puudub õigus haldusvaadet kasutada.')
+            return redirect('repairs:repair-list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context(self, request):
+        user_profiles = UserProfile.objects.select_related('user', 'department').filter(user__is_active=True).order_by('user__username')
+        department_form = DepartmentManageForm()
+        return {
+            'page_title': 'Meistri haldus',
+            'nav_key': 'operations-manage',
+            'user_profiles': user_profiles,
+            'department_form': department_form,
+            'departments': Department.objects.order_by('name'),
+            'specialty_choices': UserProfile.Specialty.choices,
+            'status_choices': Repair.Status.choices,
+            **build_navigation_context(request.user),
+        }
+
+    def get(self, request):
+        return render(request, self.template_name, self.get_context(request))
+
+    def post(self, request):
+        action = request.POST.get('action')
+
+        if action == 'save-profile':
+            profile = get_object_or_404(UserProfile.objects.select_related('user', 'department'), pk=request.POST.get('profile_id'))
+            form = UserProfileManageForm(request.POST, instance=profile)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f'Töötaja {profile.user.username} profiil uuendatud.')
+            else:
+                messages.error(request, f'Töötaja {profile.user.username} profiili salvestamine ebaõnnestus.')
+
+        elif action == 'create-department':
+            form = DepartmentManageForm(request.POST)
+            if form.is_valid():
+                department = form.save()
+                messages.success(request, f'Osakond {department.name} loodud.')
+            else:
+                messages.error(request, 'Osakonna loomine ebaõnnestus. Kontrolli nime ja koodi.')
+
+        elif action == 'save-department':
+            department = get_object_or_404(Department, pk=request.POST.get('department_id'))
+            form = DepartmentManageForm(request.POST, instance=department)
+            if form.is_valid():
+                department = form.save()
+                messages.success(request, f'Osakond {department.name} uuendatud.')
+            else:
+                messages.error(request, f'Osakonna {department.name} salvestamine ebaõnnestus.')
+
+        elif action == 'toggle-department':
+            department = get_object_or_404(Department, pk=request.POST.get('department_id'))
+            department.is_active = not department.is_active
+            department.save(update_fields=['is_active'])
+            state = 'aktiivne' if department.is_active else 'peatatud'
+            messages.success(request, f'Osakond {department.name} märgiti: {state}.')
+
+        else:
+            messages.error(request, 'Tundmatu tegevus.')
+
+        return redirect('repairs:operations-manage')
 
 
 class RepairListView(LoginRequiredMixin, View):

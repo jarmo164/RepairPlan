@@ -48,6 +48,7 @@ class Repair(models.Model):
     class Status(models.TextChoices):
         NOT_STARTED = 'NOT_STARTED', 'Alustamata'
         REVIEWED = 'REVIEWED', 'Üle vaadatud'
+        ELECTRONICS_REPAIR = 'ELECTRONICS_REPAIR', 'Elektrooniline parandus'
         IN_PROGRESS = 'IN_PROGRESS', 'Töös'
         ON_HOLD = 'ON_HOLD', 'Ootel'
         COMPLETED = 'COMPLETED', 'Lõpetatud'

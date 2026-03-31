@@ -29,6 +29,7 @@
                     <li class="nav-item"><a class="nav-link {% if nav_key == 'repair-shelf' %}active{% endif %}" href="{% url 'repairs:repair-shelf' %}">Tööde riiul</a></li>
                     {% if is_repair_master or is_administrator %}
                         <li class="nav-item"><a class="nav-link {% if nav_key == 'dashboard' %}active{% endif %}" href="{% url 'repairs:dashboard' %}">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link {% if nav_key == 'operations-manage' %}active{% endif %}" href="{% url 'repairs:operations-manage' %}">Haldus</a></li>
                     {% endif %}
                     {% if show_admin_link %}
                         <li class="nav-item"><a class="nav-link" href="/admin/">Admin</a></li>
