@@ -21,9 +21,6 @@ def validate_status_transition(*, repair, status, changed_by):
     if not can_change_status(changed_by, own_assigned_only=own_assigned):
         raise ValidationError('Sul puudub õigus staatust muuta.')
 
-    if own_assigned and status == Repair.Status.RETURNED:
-        raise ValidationError('Parandaja ei saa tööd ise tagastatuks märkida.')
-
     return
 
 

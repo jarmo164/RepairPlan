@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from repairs.models import Department, Repair
@@ -26,6 +25,7 @@ class WorkflowServiceTests(TestCase):
         self.repair.refresh_from_db()
         self.assertEqual(self.repair.status, Repair.Status.IN_PROGRESS)
 
-    def test_repairer_cannot_return_item(self):
-        with self.assertRaises(ValidationError):
-            change_status(repair=self.repair, status=Repair.Status.RETURNED, changed_by=self.repairer)
+    def test_repairer_can_return_item(self):
+        change_status(repair=self.repair, status=Repair.Status.RETURNED, changed_by=self.repairer)
+        self.repair.refresh_from_db()
+        self.assertEqual(self.repair.status, Repair.Status.RETURNED)
